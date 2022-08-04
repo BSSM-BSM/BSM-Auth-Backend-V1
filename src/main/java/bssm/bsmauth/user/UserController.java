@@ -5,11 +5,15 @@ import bssm.bsmauth.global.utils.JwtUtil;
 import bssm.bsmauth.global.utils.UserUtil;
 import bssm.bsmauth.user.dto.request.UserLoginDto;
 import bssm.bsmauth.user.dto.request.UserSignUpDto;
+import bssm.bsmauth.user.dto.request.UserUpdateNicknameDto;
+import bssm.bsmauth.user.dto.request.UserUpdatePwDto;
 import bssm.bsmauth.user.dto.response.UserLoginResponseDto;
+import bssm.bsmauth.user.dto.response.UserUpdateNicknameResponseDto;
 import bssm.bsmauth.user.entities.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -64,5 +68,26 @@ public class UserController {
                 .accessToken(token)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    @PutMapping("pw")
+    public void updatePw(@RequestBody UserUpdatePwDto dto) throws Exception {
+        userService.updatePw(userUtil.getCurrentUser(), dto);
+    }
+
+    @PutMapping("nickname")
+    public UserUpdateNicknameResponseDto updateNickname(@RequestBody UserUpdateNicknameDto dto, HttpServletResponse res) throws Exception {
+        User user = userService.updateNickname(userUtil.getCurrentUser(), dto);
+
+        String token = jwtUtil.createAccessToken(user);
+        Cookie tokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
+        res.addCookie(tokenCookie);
+
+        return new UserUpdateNicknameResponseDto(token);
+    }
+
+    @PostMapping("profile")
+    public void uploadProfile(@RequestParam MultipartFile file) {
+        userService.uploadProfile(userUtil.getCurrentUser(), file);
     }
 }
