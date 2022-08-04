@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthFilter jwtAuthFilter;
+
     @Bean
     public AccessDeniedHandler accessDeniedHandler() {
         return (request, response, e) -> {
@@ -54,6 +56,9 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable();
+
+        http
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

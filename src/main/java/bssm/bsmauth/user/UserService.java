@@ -3,6 +3,7 @@ package bssm.bsmauth.user;
 import bssm.bsmauth.global.exceptions.BadRequestException;
 import bssm.bsmauth.global.exceptions.ConflictException;
 import bssm.bsmauth.global.exceptions.NotFoundException;
+import bssm.bsmauth.user.dto.request.UserLoginDto;
 import bssm.bsmauth.user.dto.request.UserSignUpDto;
 import bssm.bsmauth.user.entities.Student;
 import bssm.bsmauth.user.entities.User;
@@ -59,6 +60,15 @@ public class UserService {
         user.setPw(newPw);
         userRepository.save(user);
 
+        return user;
+    }
+
+    public User login(UserLoginDto dto) throws Exception {
+        User user = userRepository.findById(dto.getId())
+                .orElseThrow(() -> {throw new BadRequestException("id 또는 password가 맞지 않습니다");});
+        if (!user.getPw().equals(encryptPw(user.getPwSalt(), dto.getPw()))) {
+            throw new BadRequestException("id 또는 password가 맞지 않습니다");
+        }
         return user;
     }
 
