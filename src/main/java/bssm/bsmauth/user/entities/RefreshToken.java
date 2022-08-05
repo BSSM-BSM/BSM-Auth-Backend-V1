@@ -28,7 +28,6 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @Column(nullable = false)
