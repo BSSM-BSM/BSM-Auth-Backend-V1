@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface StudentRepository extends JpaRepository <Student, String> {
 
     Optional<Student> findByAuthCode(String authCode);
+
+    Optional<Student> findByEnrolledAtAndGradeAndClassNoAndStudentNoAndName(int enrolledAt, int grade, int classNo, int studentNo, String name);
 }

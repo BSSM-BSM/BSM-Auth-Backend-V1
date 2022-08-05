@@ -3,10 +3,7 @@ package bssm.bsmauth.user;
 import bssm.bsmauth.global.utils.CookieUtil;
 import bssm.bsmauth.global.utils.JwtUtil;
 import bssm.bsmauth.global.utils.UserUtil;
-import bssm.bsmauth.user.dto.request.UserLoginDto;
-import bssm.bsmauth.user.dto.request.UserSignUpDto;
-import bssm.bsmauth.user.dto.request.UserUpdateNicknameDto;
-import bssm.bsmauth.user.dto.request.UserUpdatePwDto;
+import bssm.bsmauth.user.dto.request.*;
 import bssm.bsmauth.user.dto.response.UserLoginResponseDto;
 import bssm.bsmauth.user.dto.response.UserUpdateNicknameResponseDto;
 import bssm.bsmauth.user.entities.User;
@@ -89,5 +86,10 @@ public class UserController {
     @PostMapping("profile")
     public void uploadProfile(@RequestParam MultipartFile file) {
         userService.uploadProfile(userUtil.getCurrentUser(), file);
+    }
+
+    @PostMapping("mail/authcode")
+    public void sendAuthCodeMail(@RequestBody SendAuthCodeMailDto dto) {
+        userService.sendAuthCodeMail(dto);
     }
 }
