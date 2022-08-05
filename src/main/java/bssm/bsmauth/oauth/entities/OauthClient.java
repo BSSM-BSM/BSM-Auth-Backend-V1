@@ -3,12 +3,12 @@ package bssm.bsmauth.oauth.entities;
 
 import bssm.bsmauth.user.entities.User;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -44,4 +44,7 @@ public class OauthClient {
 
     @CreatedDate
     private Date createdAt;
+
+    @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER)
+    private List<OauthClientScope> scopes = new ArrayList<>();
 }

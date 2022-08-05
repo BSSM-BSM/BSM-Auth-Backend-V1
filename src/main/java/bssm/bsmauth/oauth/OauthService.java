@@ -2,9 +2,11 @@ package bssm.bsmauth.oauth;
 
 import bssm.bsmauth.global.exceptions.BadRequestException;
 import bssm.bsmauth.oauth.dto.request.CreateOauthClientDto;
+import bssm.bsmauth.oauth.dto.response.OauthClientResponseDto;
 import bssm.bsmauth.oauth.entities.OauthClient;
 import bssm.bsmauth.oauth.entities.OauthClientScope;
 import bssm.bsmauth.oauth.entities.OauthClientScopePk;
+import bssm.bsmauth.oauth.entities.OauthScope;
 import bssm.bsmauth.oauth.repositories.OauthClientRepository;
 import bssm.bsmauth.oauth.repositories.OauthClientScopeRepository;
 import bssm.bsmauth.oauth.utils.OauthScopeUtil;
@@ -51,6 +53,33 @@ public class OauthService {
 
         oauthClientRepository.save(client);
         oauthClientScopeRepository.saveAll(clientScopeList);
+    }
+
+    public List<OauthClientResponseDto> getClientList(User user) {
+        List<OauthClient> clientList = oauthClientRepository.findByUsercode(user.getUsercode());
+
+        List<OauthClientResponseDto> clientResponseDtoList = new ArrayList<>();
+
+        clientList.forEach(client -> {
+            List<String> scopeList = new ArrayList<>();
+            client.getScopes().forEach(scope -> {
+                scopeList.add(scope.getOauthScope().getId());
+            });
+
+            clientResponseDtoList.add(
+                    OauthClientResponseDto.builder()
+                            .clientId(client.getId())
+                            .clientSecret(client.getClientSecret())
+                            .domain(client.getDomain())
+                            .serviceName(client.getServiceName())
+                            .redirectURI(client.getRedirectURI())
+                            .usercode(client.getUsercode())
+                            .scopeList(scopeList)
+                            .build()
+            );
+        });
+
+        return clientResponseDtoList;
     }
 
     private String getRandomStr(int length) {
