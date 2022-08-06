@@ -52,7 +52,13 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/authcode").permitAll()
+
+                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/authcode")
+                .permitAll()
+
+                .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource")
+                .permitAll()
+
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable();

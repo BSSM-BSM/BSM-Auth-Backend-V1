@@ -19,7 +19,7 @@ public class OauthController {
     private final UserUtil userUtil;
     private final OauthService oauthService;
 
-    @GetMapping("authentication")
+    @GetMapping("authenticate")
     public OauthAuthenticationResponseDto authentication(
             @RequestParam String clientId,
             @RequestParam String redirectURI
@@ -27,7 +27,7 @@ public class OauthController {
         return oauthService.authentication(userUtil.getCurrentUser(), clientId, redirectURI);
     }
 
-    @PostMapping("authorization")
+    @PostMapping("authorize")
     public OauthAuthorizationResponseDto authorization(@RequestBody OauthAuthorizationDto dto) {
         return oauthService.authorization(userUtil.getCurrentUser(), dto);
     }

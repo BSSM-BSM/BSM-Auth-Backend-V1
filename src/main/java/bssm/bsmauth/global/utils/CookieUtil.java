@@ -11,11 +11,13 @@ public class CookieUtil {
 
     @Value("${COOKIE_DOMAIN}")
     private String COOKIE_DOMAIN;
+    @Value("${COOKIE_SECURE}")
+    private boolean COOKIE_SECURE;
 
     public Cookie createCookie(String name, String value, long time) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
+        cookie.setSecure(COOKIE_SECURE);
         cookie.setMaxAge((int) time);
         cookie.setPath("/");
         cookie.setDomain(COOKIE_DOMAIN);

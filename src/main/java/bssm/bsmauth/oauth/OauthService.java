@@ -138,6 +138,7 @@ public class OauthService {
                 case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
                 case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
                 case "classNo" -> oauthUserDto.classNo(user.getStudent().getClassNo());
+                case "studentNo" -> oauthUserDto.studentNo(user.getStudent().getStudentNo());
                 case "name" -> oauthUserDto.name(user.getStudent().getName());
                 case "email" -> oauthUserDto.email(user.getStudent().getEmail());
             }
