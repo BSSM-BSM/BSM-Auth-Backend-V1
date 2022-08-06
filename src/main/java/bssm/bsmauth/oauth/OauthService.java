@@ -1,11 +1,13 @@
 package bssm.bsmauth.oauth;
 
 import bssm.bsmauth.global.exceptions.BadRequestException;
+import bssm.bsmauth.global.exceptions.NotFoundException;
+import bssm.bsmauth.oauth.dto.OauthUserDto;
 import bssm.bsmauth.oauth.dto.request.CreateOauthClientDto;
 import bssm.bsmauth.oauth.dto.request.OauthAuthorizationDto;
-import bssm.bsmauth.oauth.dto.response.OauthAuthenticationResponseDto;
-import bssm.bsmauth.oauth.dto.response.OauthAuthorizationResponseDto;
-import bssm.bsmauth.oauth.dto.response.OauthClientResponseDto;
+import bssm.bsmauth.oauth.dto.request.OauthGetResourceDto;
+import bssm.bsmauth.oauth.dto.request.OauthGetTokenDto;
+import bssm.bsmauth.oauth.dto.response.*;
 import bssm.bsmauth.oauth.entities.*;
 import bssm.bsmauth.oauth.repositories.OauthAuthCodeRepository;
 import bssm.bsmauth.oauth.repositories.OauthClientRepository;
@@ -13,6 +15,7 @@ import bssm.bsmauth.oauth.repositories.OauthClientScopeRepository;
 import bssm.bsmauth.oauth.repositories.OauthTokenRepository;
 import bssm.bsmauth.oauth.utils.OauthScopeUtil;
 import bssm.bsmauth.user.entities.User;
+import bssm.bsmauth.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -30,6 +34,7 @@ public class OauthService {
     private final OauthClientScopeRepository oauthClientScopeRepository;
     private final OauthAuthCodeRepository oauthAuthCodeRepository;
     private final OauthTokenRepository oauthTokenRepository;
+    private final UserRepository userRepository;
     private final OauthScopeUtil oauthScopeUtil;
 
     public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
@@ -73,6 +78,74 @@ public class OauthService {
 
         return OauthAuthorizationResponseDto.builder()
                 .redirectURI(client.getRedirectURI() + "?code=" + authCode.getCode())
+                .build();
+    }
+
+    public OauthTokenResponseDto getToken(OauthGetTokenDto dto) {
+        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(dto.getAuthCode(), false).orElseThrow(
+                () -> {throw new NotFoundException("인증 코드를 찾을 수 없습니다");}
+        );
+        OauthClient client = authCode.getOauthClient();
+        if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
+            throw new BadRequestException("클라이언트 정보가 잘못되었습니다");
+        }
+
+        authCode.setExpire(true);
+        oauthAuthCodeRepository.save(authCode);
+
+        Optional<OauthToken> token = oauthTokenRepository.findByUsercode(authCode.getUsercode());
+        if (token.isPresent()) {
+            return OauthTokenResponseDto.builder()
+                    .token(token.get().getToken())
+                    .build();
+        }
+
+        OauthToken newToken = OauthToken.builder()
+                .token(getRandomStr(32))
+                .usercode(authCode.getUsercode())
+                .oauthClient(client)
+                .build();
+        oauthTokenRepository.save(newToken);
+
+        return OauthTokenResponseDto.builder()
+                .token(newToken.getToken())
+                .build();
+    }
+
+    public OauthResourceResponseDto getResource(OauthGetResourceDto dto) {
+        OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false).orElseThrow(
+                () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
+        );
+        OauthClient client = token.getOauthClient();
+        if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
+            throw new BadRequestException("클라이언트 정보가 잘못되었습니다");
+        }
+
+        User user = userRepository.findById(token.getUsercode()).orElseThrow(
+                () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
+        );
+
+        List<String> scopeList = new ArrayList<>();
+        client.getScopes().forEach(scope -> {
+            scopeList.add(scope.getOauthScope().getId());
+        });
+
+        OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
+        scopeList.forEach(scope -> {
+            switch (scope) {
+                case "code" -> oauthUserDto.code(user.getUsercode());
+                case "nickname" -> oauthUserDto.nickname(user.getNickname());
+                case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
+                case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
+                case "classNo" -> oauthUserDto.classNo(user.getStudent().getClassNo());
+                case "name" -> oauthUserDto.name(user.getStudent().getName());
+                case "email" -> oauthUserDto.email(user.getStudent().getEmail());
+            }
+        });
+
+        return OauthResourceResponseDto.builder()
+                .scopeList(scopeList)
+                .user(oauthUserDto.build())
                 .build();
     }
 
