@@ -2,13 +2,15 @@ package bssm.bsmauth.oauth;
 
 import bssm.bsmauth.global.exceptions.BadRequestException;
 import bssm.bsmauth.oauth.dto.request.CreateOauthClientDto;
+import bssm.bsmauth.oauth.dto.request.OauthAuthorizationDto;
+import bssm.bsmauth.oauth.dto.response.OauthAuthenticationResponseDto;
+import bssm.bsmauth.oauth.dto.response.OauthAuthorizationResponseDto;
 import bssm.bsmauth.oauth.dto.response.OauthClientResponseDto;
-import bssm.bsmauth.oauth.entities.OauthClient;
-import bssm.bsmauth.oauth.entities.OauthClientScope;
-import bssm.bsmauth.oauth.entities.OauthClientScopePk;
-import bssm.bsmauth.oauth.entities.OauthScope;
+import bssm.bsmauth.oauth.entities.*;
+import bssm.bsmauth.oauth.repositories.OauthAuthCodeRepository;
 import bssm.bsmauth.oauth.repositories.OauthClientRepository;
 import bssm.bsmauth.oauth.repositories.OauthClientScopeRepository;
+import bssm.bsmauth.oauth.repositories.OauthTokenRepository;
 import bssm.bsmauth.oauth.utils.OauthScopeUtil;
 import bssm.bsmauth.user.entities.User;
 import lombok.RequiredArgsConstructor;
@@ -26,12 +28,57 @@ public class OauthService {
 
     private final OauthClientRepository oauthClientRepository;
     private final OauthClientScopeRepository oauthClientScopeRepository;
+    private final OauthAuthCodeRepository oauthAuthCodeRepository;
+    private final OauthTokenRepository oauthTokenRepository;
     private final OauthScopeUtil oauthScopeUtil;
+
+    public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
+        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
+                () -> {throw new BadRequestException("Oauth Authentication Failed");}
+        );
+        if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
+
+        // 이미 인증이 되었다면
+        if (oauthTokenRepository.findByUsercode(user.getUsercode()).isPresent()) {
+            return OauthAuthenticationResponseDto.builder()
+                    .isAuthorized(true)
+                    .build();
+        }
+
+        List<String> scopeList = new ArrayList<>();
+        client.getScopes().forEach(scope -> {
+            scopeList.add(scope.getOauthScope().getId());
+        });
+
+        return OauthAuthenticationResponseDto.builder()
+                .isAuthorized(false)
+                .domain(client.getDomain())
+                .serviceName(client.getServiceName())
+                .scopeList(scopeList)
+                .build();
+    }
+
+    public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationDto dto) {
+        OauthClient client = oauthClientRepository.findById(dto.getClientId()).orElseThrow(
+                () -> {throw new BadRequestException("Oauth Authentication Failed");}
+        );
+        if (!client.getRedirectURI().equals(dto.getRedirectURI())) throw new BadRequestException("Oauth Authentication Failed");
+
+        OauthAuthCode authCode = OauthAuthCode.builder()
+                .code(getRandomStr(32))
+                .usercode(user.getUsercode())
+                .oauthClient(client)
+                .build();
+        oauthAuthCodeRepository.save(authCode);
+
+        return OauthAuthorizationResponseDto.builder()
+                .redirectURI(client.getRedirectURI() + "?code=" + authCode.getCode())
+                .build();
+    }
 
     public void createClient(User user, CreateOauthClientDto dto) {
         if (!domainCheck(dto.getDomain())) throw new BadRequestException("도메인이 잘못되었습니다");
         if (!uriCheck(dto.getDomain(), dto.getRedirectURI())) throw new BadRequestException("리다이렉트 주소가 잘못되었습니다");
-        System.out.println(getRandomStr(32));
 
         OauthClient client = OauthClient.builder()
                 .id(getRandomStr(8))

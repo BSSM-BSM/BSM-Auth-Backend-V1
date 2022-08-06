@@ -1,13 +1,12 @@
 package bssm.bsmauth.oauth.entities;
 
 
+import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.user.entities.User;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -17,7 +16,7 @@ import java.util.List;
 @Builder
 @Entity
 @Table
-public class OauthClient {
+public class OauthClient extends BaseTimeEntity {
 
     @Id
     @Column(length = 8)
@@ -41,9 +40,6 @@ public class OauthClient {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
     private User user;
-
-    @CreatedDate
-    private Date createdAt;
 
     @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER)
     private List<OauthClientScope> scopes = new ArrayList<>();
