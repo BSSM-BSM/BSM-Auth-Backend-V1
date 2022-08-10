@@ -46,17 +46,17 @@ public class OauthService {
         // 이미 인증이 되었다면
         if (oauthTokenRepository.findByUsercode(user.getUsercode()).isPresent()) {
             return OauthAuthenticationResponseDto.builder()
-                    .isAuthorized(true)
+                    .authorized(true)
                     .build();
         }
 
-        List<String> scopeList = new ArrayList<>();
+        List<OauthScope> scopeList = new ArrayList<>();
         client.getScopes().forEach(scope -> {
-            scopeList.add(scope.getOauthScope().getId());
+            scopeList.add(oauthScopeUtil.getScope(scope.getOauthScope().getId()));
         });
 
         return OauthAuthenticationResponseDto.builder()
-                .isAuthorized(false)
+                .authorized(false)
                 .domain(client.getDomain())
                 .serviceName(client.getServiceName())
                 .scopeList(scopeList)

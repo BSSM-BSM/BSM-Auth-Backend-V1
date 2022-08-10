@@ -1,10 +1,12 @@
 package bssm.bsmauth.user.dto.request;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Builder
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class SendAuthCodeMailDto {
 
     private int enrolledAt;

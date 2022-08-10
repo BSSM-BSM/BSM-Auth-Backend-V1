@@ -41,6 +41,27 @@ public class UserService {
     @Value("${PROFILE_UPLOAD_RESOURCE_PATH}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
+    public User userInfo(int usercode) {
+        User user = userRepository.findById(usercode).orElseThrow(
+                () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
+        );
+
+        Student studentInfo = Student.builder()
+                .enrolledAt(user.getStudent().getEnrolledAt())
+                .grade(user.getStudent().getGrade())
+                .classNo(user.getStudent().getStudentNo())
+                .studentNo(user.getStudent().getStudentNo())
+                .name(user.getStudent().getName())
+                .build();
+
+        return User.builder()
+                .usercode(user.getUsercode())
+                .nickname(user.getNickname())
+                .createdAt(user.getCreatedAt())
+                .student(studentInfo)
+                .build();
+    }
+
     @Transactional
     public User signUp(UserSignUpDto dto) throws Exception {
         User user = dto.toEntity();

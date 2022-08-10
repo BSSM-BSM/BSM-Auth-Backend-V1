@@ -36,7 +36,7 @@ public class UserController {
 
     @GetMapping()
     public User getUserInfo() {
-        return userUtil.getCurrentUser();
+        return userService.userInfo(userUtil.getCurrentUser().getUsercode());
     }
 
     @DeleteMapping("logout")
