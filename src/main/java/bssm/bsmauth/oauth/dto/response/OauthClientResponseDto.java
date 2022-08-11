@@ -1,6 +1,5 @@
 package bssm.bsmauth.oauth.dto.response;
 
-import bssm.bsmauth.oauth.entities.OauthScope;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,6 +14,5 @@ public class OauthClientResponseDto {
     private String domain;
     private String serviceName;
     private String redirectURI;
-    private int usercode;
     private List<String> scopeList;
 }

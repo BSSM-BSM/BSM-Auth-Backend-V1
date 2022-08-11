@@ -194,13 +194,16 @@ public class OauthService {
                             .domain(client.getDomain())
                             .serviceName(client.getServiceName())
                             .redirectURI(client.getRedirectURI())
-                            .usercode(client.getUsercode())
                             .scopeList(scopeList)
                             .build()
             );
         });
 
         return clientResponseDtoList;
+    }
+
+    public List<OauthScope> getScopeList() {
+        return oauthScopeUtil.getAllScope();
     }
 
     private String getRandomStr(int length) {

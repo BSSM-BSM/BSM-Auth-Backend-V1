@@ -6,6 +6,7 @@ import bssm.bsmauth.oauth.dto.request.OauthAuthorizationDto;
 import bssm.bsmauth.oauth.dto.request.OauthGetResourceDto;
 import bssm.bsmauth.oauth.dto.request.OauthGetTokenDto;
 import bssm.bsmauth.oauth.dto.response.*;
+import bssm.bsmauth.oauth.entities.OauthScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,5 +51,10 @@ public class OauthController {
     @GetMapping("client")
     public List<OauthClientResponseDto> getClientList() {
         return oauthService.getClientList(userUtil.getCurrentUser());
+    }
+
+    @GetMapping("scopes")
+    public List<OauthScope> getScopeList() {
+        return oauthService.getScopeList();
     }
 }

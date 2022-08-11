@@ -49,7 +49,7 @@ public class UserService {
         Student studentInfo = Student.builder()
                 .enrolledAt(user.getStudent().getEnrolledAt())
                 .grade(user.getStudent().getGrade())
-                .classNo(user.getStudent().getStudentNo())
+                .classNo(user.getStudent().getClassNo())
                 .studentNo(user.getStudent().getStudentNo())
                 .name(user.getStudent().getName())
                 .build();
