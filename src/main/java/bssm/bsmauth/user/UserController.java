@@ -97,4 +97,9 @@ public class UserController {
     public void sendFindIdMail(@RequestBody FindStudentDto dto) {
         userService.sendFindIdMail(dto);
     }
+
+    @PostMapping("mail/pw")
+    public void sendResetPwMail(@RequestBody String id) {
+        userService.sendResetPwMail(id);
+    }
 }

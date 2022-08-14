@@ -87,7 +87,7 @@ public class UserService {
         user.setCreatedAt(new Date());
 
         // 비밀번호 솔트 값 생성
-        String salt = createSalt();
+        String salt = getRandomStr(64);
         // 비밀번호 암호화
         String newPw = encryptPw(salt, dto.getPw());
 
@@ -116,7 +116,7 @@ public class UserService {
         );
 
         // 새 비밀번호 솔트 값 생성
-        String newSalt = createSalt();
+        String newSalt = getRandomStr(64);
         // 새 비밀번호 암호화
         String newPw = encryptPw(newSalt, dto.getNewPw());
 
@@ -193,8 +193,8 @@ public class UserService {
                 "                <h2 style=\"display:inline-block;font-size:20px;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">"+ student.getAuthCode() +"</h2>\n" +
                 "                <br><br><br>\n" +
                 "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
-                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다.</p>\n" +
-                "                    <p style=\"margin:0;\">- 인증 코드는 한 사람당 한 개의 계정에만 쓸 수 있습니다.</p>\n" +
+                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
+                "                    <p style=\"margin:0;\">- 인증 코드는 한 사람당 한 개의 계정에만 쓸 수 있습니다</p>\n" +
                 "                </div><br>\n" +
                 "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
                 "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
@@ -223,7 +223,6 @@ public class UserService {
         ).orElseThrow(
                 () -> {throw new NotFoundException("학생을 찾을 수 없습니다");}
         );
-
         User user = userRepository.findByStudent(student).orElseThrow(
                 () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
         );
@@ -242,7 +241,7 @@ public class UserService {
                 "                <h2 style=\"display:inline-block;font-size:20px;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">"+ user.getId() +"</h2>\n" +
                 "                <br><br><br>\n" +
                 "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
-                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다.</p>\n" +
+                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
                 "                </div><br>\n" +
                 "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
                 "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
@@ -261,9 +260,50 @@ public class UserService {
         mailService.sendMail(mailDto);
     }
 
-    private String createSalt() {
+    public void sendResetPwMail(String id) {
+        User user = userRepository.findById(id).orElseThrow(
+                () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
+        );
+
+        String token = getRandomStr(32);
+
+        String content = "<!DOCTYPE HTML>\n" +
+                "    <html lang=\"kr\">\n" +
+                "    <head>\n" +
+                "        <meta charset=\"UTF-8\">\n" +
+                "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                "    </head>\n" +
+                "    <body>\n" +
+                "        <div style=\"display:flex;justify-content:center;\">\n" +
+                "            <div style=\"padding:25px 0;text-align:center;margin:0 auto;border:solid 5px;border-radius:25px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은고딕',helvetica,'Apple SD Gothic Neo',sans-serif;background-color:#202124; color:#e8eaed;\">\n" +
+                "                <img src=\"https://bssm.kro.kr/icons/logo.png\" alt=\"로고\" style=\"height:35px; padding-top:12px;\">\n" +
+                "                <h1 style=\"font-size:28px;margin-left:25px;margin-right:25px;\">BSM 비밀번호 재설정 링크입니다</h1>\n" +
+                "                <a href=\"https://bssm.kro.kr/pwReset?token=" + token + "\" style=\"display:inline-block;font-size:20px;text-decoration:none;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">비밀번호 재설정</a>\n" +
+                "                <br><br><br>\n" +
+                "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
+                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
+                "                    <p style=\"margin:0;\">- 해당 링크는 발송시점으로 부터 5분동안 유효합니다</p>\n" +
+                "                </div><br>\n" +
+                "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
+                "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
+                "                    <p style=\"margin:0;\">Copyright 2022. BSM TEAM all rights reserved.</p>\n" +
+                "                </footer>\n" +
+                "            </div>\n" +
+                "        </div>\n" +
+                "    </body>\n" +
+                "    </html>";
+
+        MailDto mailDto = MailDto.builder()
+                .to(user.getStudent().getEmail())
+                .subject("BSM 비밀번호 재설정 링크입니다")
+                .content(content)
+                .build();
+        mailService.sendMail(mailDto);
+    }
+
+    private String getRandomStr(int length) {
         SecureRandom secureRandom = new SecureRandom();
-        byte[] randomBytes = new byte[32];
+        byte[] randomBytes = new byte[length / 2];
         secureRandom.nextBytes(randomBytes);
         return HexFormat.of().formatHex(randomBytes);
     }
