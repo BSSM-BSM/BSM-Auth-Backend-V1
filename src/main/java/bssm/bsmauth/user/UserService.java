@@ -7,8 +7,10 @@ import bssm.bsmauth.global.exceptions.NotFoundException;
 import bssm.bsmauth.global.mail.MailService;
 import bssm.bsmauth.global.mail.dto.MailDto;
 import bssm.bsmauth.user.dto.request.*;
+import bssm.bsmauth.user.entities.ResetPwToken;
 import bssm.bsmauth.user.entities.Student;
 import bssm.bsmauth.user.entities.User;
+import bssm.bsmauth.user.repositories.ResetPwTokenRepository;
 import bssm.bsmauth.user.repositories.StudentRepository;
 import bssm.bsmauth.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final MailService mailService;
+    private final ResetPwTokenRepository resetPwTokenRepository;
     @Value("${PUBLIC_RESOURCE_PATH}")
     private String PUBLIC_RESOURCE_PATH;
     @Value("${PROFILE_UPLOAD_RESOURCE_PATH}")
@@ -123,6 +126,17 @@ public class UserService {
         newUser.setPw(newPw);
         newUser.setPwSalt(newSalt);
         userRepository.save(newUser);
+    }
+
+    public void resetPwByToken(UserResetPwByTokenDto dto) throws Exception {
+        ResetPwToken token = resetPwTokenRepository.findByToken(dto.getToken()).orElseThrow(
+                () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
+        );
+        if (!token.isAvailable() || new Date().after(token.getExpireIn())) throw new NotFoundException("토큰이 만료되었습니다");
+
+        updatePw(token.getUser(), dto);
+        token.setAvailable(false);
+        resetPwTokenRepository.save(token);
     }
 
     public User updateNickname(User user, UserUpdateNicknameDto dto) {
@@ -260,12 +274,20 @@ public class UserService {
         mailService.sendMail(mailDto);
     }
 
-    public void sendResetPwMail(String id) {
-        User user = userRepository.findById(id).orElseThrow(
+    public void sendResetPwMail(SendResetPwMailDto dto) {
+        User user = userRepository.findById(dto.getId()).orElseThrow(
                 () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
         );
 
-        String token = getRandomStr(32);
+        Date expireIn = new Date();
+        expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
+
+        ResetPwToken token = ResetPwToken.builder()
+                .token(getRandomStr(32))
+                .usercode(user.getUsercode())
+                .isAvailable(true)
+                .expireIn(expireIn)
+                .build();
 
         String content = "<!DOCTYPE HTML>\n" +
                 "    <html lang=\"kr\">\n" +
@@ -299,6 +321,7 @@ public class UserService {
                 .content(content)
                 .build();
         mailService.sendMail(mailDto);
+        resetPwTokenRepository.save(token);
     }
 
     private String getRandomStr(int length) {

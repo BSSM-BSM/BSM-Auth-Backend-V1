@@ -72,6 +72,11 @@ public class UserController {
         userService.updatePw(userUtil.getCurrentUser(), dto);
     }
 
+    @PostMapping("pw/token")
+    public void resetPwByToken(@RequestBody UserResetPwByTokenDto dto) throws Exception {
+        userService.resetPwByToken(dto);
+    }
+
     @PutMapping("nickname")
     public UserUpdateNicknameResponseDto updateNickname(@RequestBody UserUpdateNicknameDto dto, HttpServletResponse res) throws Exception {
         User user = userService.updateNickname(userUtil.getCurrentUser(), dto);
@@ -99,7 +104,7 @@ public class UserController {
     }
 
     @PostMapping("mail/pw")
-    public void sendResetPwMail(@RequestBody String id) {
-        userService.sendResetPwMail(id);
+    public void sendResetPwMail(@RequestBody SendResetPwMailDto dto) {
+        userService.sendResetPwMail(dto);
     }
 }
