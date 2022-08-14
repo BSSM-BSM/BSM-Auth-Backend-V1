@@ -89,7 +89,12 @@ public class UserController {
     }
 
     @PostMapping("mail/authcode")
-    public void sendAuthCodeMail(@RequestBody SendAuthCodeMailDto dto) {
+    public void sendAuthCodeMail(@RequestBody FindStudentDto dto) {
         userService.sendAuthCodeMail(dto);
+    }
+
+    @PostMapping("mail/id")
+    public void sendFindIdMail(@RequestBody FindStudentDto dto) {
+        userService.sendFindIdMail(dto);
     }
 }

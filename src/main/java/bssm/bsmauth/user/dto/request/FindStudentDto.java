@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class SendAuthCodeMailDto {
+public class FindStudentDto {
 
     private int enrolledAt;
     private int grade;

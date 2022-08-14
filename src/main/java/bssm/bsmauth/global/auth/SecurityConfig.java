@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
 
-                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/authcode")
+                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/**")
                 .permitAll()
 
                 .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource")
