@@ -9,13 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +25,13 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final AuthFilterExceptionHandler authFilterExceptionHandler;
     private final ObjectMapper objectMapper;
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/**")
+                .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource");
+    }
 
     @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
@@ -49,13 +56,6 @@ public class SecurityConfig {
                     .authenticationEntryPoint(authenticationEntryPoint())
                 .and()
                 .authorizeRequests()
-
-                .antMatchers(HttpMethod.POST, "/user/login", "/user", "/user/mail/**")
-                .permitAll()
-
-                .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource")
-                .permitAll()
-
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().disable();
