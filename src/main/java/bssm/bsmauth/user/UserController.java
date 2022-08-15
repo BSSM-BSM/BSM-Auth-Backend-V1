@@ -4,6 +4,7 @@ import bssm.bsmauth.global.utils.CookieUtil;
 import bssm.bsmauth.global.utils.JwtUtil;
 import bssm.bsmauth.global.utils.UserUtil;
 import bssm.bsmauth.user.dto.request.*;
+import bssm.bsmauth.user.dto.response.ResetPwTokenInfoDto;
 import bssm.bsmauth.user.dto.response.UserLoginResponseDto;
 import bssm.bsmauth.user.dto.response.UserUpdateNicknameResponseDto;
 import bssm.bsmauth.user.entities.User;
@@ -75,6 +76,11 @@ public class UserController {
     @PostMapping("pw/token")
     public void resetPwByToken(@RequestBody UserResetPwByTokenDto dto) throws Exception {
         userService.resetPwByToken(dto);
+    }
+
+    @GetMapping("pw/token")
+    public ResetPwTokenInfoDto getResetPwTokenInfo(@RequestParam String token) throws Exception {
+        return userService.getResetPwTokenInfo(token);
     }
 
     @PutMapping("nickname")

@@ -19,8 +19,8 @@ public class ResetPwToken extends BaseTimeEntity {
     @Column(length = 32)
     private String token;
 
-    @Column(nullable = false)
-    private boolean isAvailable;
+    @Column(name = "isUsed", nullable = false)
+    private boolean used;
 
     @Column(nullable = false)
     private Date expireIn;

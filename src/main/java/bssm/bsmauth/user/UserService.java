@@ -7,6 +7,7 @@ import bssm.bsmauth.global.exceptions.NotFoundException;
 import bssm.bsmauth.global.mail.MailService;
 import bssm.bsmauth.global.mail.dto.MailDto;
 import bssm.bsmauth.user.dto.request.*;
+import bssm.bsmauth.user.dto.response.ResetPwTokenInfoDto;
 import bssm.bsmauth.user.entities.ResetPwToken;
 import bssm.bsmauth.user.entities.Student;
 import bssm.bsmauth.user.entities.User;
@@ -132,11 +133,21 @@ public class UserService {
         ResetPwToken token = resetPwTokenRepository.findByToken(dto.getToken()).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
-        if (!token.isAvailable() || new Date().after(token.getExpireIn())) throw new NotFoundException("토큰이 만료되었습니다");
+        if (token.isUsed() || new Date().after(token.getExpireIn())) throw new NotFoundException("토큰이 만료되었습니다");
 
         updatePw(token.getUser(), dto);
-        token.setAvailable(false);
+        token.setUsed(true);
         resetPwTokenRepository.save(token);
+    }
+
+    public ResetPwTokenInfoDto getResetPwTokenInfo(String token) throws Exception {
+        ResetPwToken tokenInfo = resetPwTokenRepository.findByToken(token).orElseThrow(
+                () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
+        );
+        return ResetPwTokenInfoDto.builder()
+                .used(tokenInfo.isUsed())
+                .expireIn(tokenInfo.getExpireIn())
+                .build();
     }
 
     public User updateNickname(User user, UserUpdateNicknameDto dto) {
@@ -285,7 +296,7 @@ public class UserService {
         ResetPwToken token = ResetPwToken.builder()
                 .token(getRandomStr(32))
                 .usercode(user.getUsercode())
-                .isAvailable(true)
+                .used(false)
                 .expireIn(expireIn)
                 .build();
 
@@ -300,7 +311,7 @@ public class UserService {
                 "            <div style=\"padding:25px 0;text-align:center;margin:0 auto;border:solid 5px;border-radius:25px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은고딕',helvetica,'Apple SD Gothic Neo',sans-serif;background-color:#202124; color:#e8eaed;\">\n" +
                 "                <img src=\"https://bssm.kro.kr/icons/logo.png\" alt=\"로고\" style=\"height:35px; padding-top:12px;\">\n" +
                 "                <h1 style=\"font-size:28px;margin-left:25px;margin-right:25px;\">BSM 비밀번호 재설정 링크입니다</h1>\n" +
-                "                <a href=\"https://bssm.kro.kr/pwReset?token=" + token + "\" style=\"display:inline-block;font-size:20px;text-decoration:none;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">비밀번호 재설정</a>\n" +
+                "                <a href=\"https://auth.bssm.kro.kr/resetPw?token=" + token + "\" style=\"display:inline-block;font-size:20px;text-decoration:none;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">비밀번호 재설정</a>\n" +
                 "                <br><br><br>\n" +
                 "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
                 "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
