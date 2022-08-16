@@ -16,7 +16,7 @@ public class OauthClientScope {
     @EmbeddedId
     private OauthClientScopePk oauthClientScopePk;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "clientId", insertable = false, updatable = false)
     private OauthClient oauthClient;
 

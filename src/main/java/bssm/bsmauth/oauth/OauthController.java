@@ -57,4 +57,9 @@ public class OauthController {
     public List<OauthScope> getScopeList() {
         return oauthService.getScopeList();
     }
+
+    @DeleteMapping("client/{clientId}")
+    public void deleteClient(@PathVariable String clientId) {
+        oauthService.deleteClient(userUtil.getCurrentUser(), clientId);
+    }
 }

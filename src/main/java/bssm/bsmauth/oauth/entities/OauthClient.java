@@ -42,6 +42,6 @@ public class OauthClient extends BaseTimeEntity {
     private User user;
 
     @Builder.Default
-    @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<OauthClientScope> scopes = new ArrayList<>();
 }

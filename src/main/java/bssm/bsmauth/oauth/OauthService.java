@@ -18,6 +18,7 @@ import bssm.bsmauth.user.entities.User;
 import bssm.bsmauth.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -204,6 +205,18 @@ public class OauthService {
 
     public List<OauthScope> getScopeList() {
         return oauthScopeUtil.getAllScope();
+    }
+
+    @Transactional
+    public void deleteClient(User user, String clientId) {
+        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
+                () -> {throw new NotFoundException("클라이언트를 찾을 수 없습니다");}
+        );
+        if (client.getUsercode() != user.getUsercode()) {
+            throw new BadRequestException("권한이 없습니다");
+        }
+
+        oauthClientRepository.deleteById(clientId);
     }
 
     private String getRandomStr(int length) {

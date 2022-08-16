@@ -20,7 +20,7 @@ public class OauthAuthCode extends BaseTimeEntity {
     @Column(length = 32)
     private String code;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "clientId")
     private OauthClient oauthClient;
 
