@@ -1,9 +1,9 @@
 package bssm.bsmauth.global.utils;
 
-import bssm.bsmauth.user.entities.RefreshToken;
-import bssm.bsmauth.user.entities.Student;
-import bssm.bsmauth.user.entities.User;
-import bssm.bsmauth.user.repositories.RefreshTokenRepository;
+import bssm.bsmauth.domain.user.entities.RefreshToken;
+import bssm.bsmauth.domain.user.entities.Student;
+import bssm.bsmauth.domain.user.entities.User;
+import bssm.bsmauth.domain.user.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

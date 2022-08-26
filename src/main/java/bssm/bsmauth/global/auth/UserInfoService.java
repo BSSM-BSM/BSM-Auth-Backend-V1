@@ -1,7 +1,7 @@
 package bssm.bsmauth.global.auth;
 
 import bssm.bsmauth.global.exceptions.NotFoundException;
-import bssm.bsmauth.user.repositories.UserRepository;
+import bssm.bsmauth.domain.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

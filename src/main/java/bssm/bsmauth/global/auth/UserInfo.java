@@ -1,6 +1,6 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.user.entities.User;
+import bssm.bsmauth.domain.user.entities.User;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,15 +1,11 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.global.exceptions.HttpError;
-import bssm.bsmauth.global.exceptions.HttpErrorResponse;
 import bssm.bsmauth.global.exceptions.NotFoundException;
 import bssm.bsmauth.global.exceptions.UnAuthorizedException;
 import bssm.bsmauth.global.utils.CookieUtil;
 import bssm.bsmauth.global.utils.JwtUtil;
-import bssm.bsmauth.user.entities.User;
-import bssm.bsmauth.user.repositories.RefreshTokenRepository;
-import bssm.bsmauth.user.repositories.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import bssm.bsmauth.domain.user.entities.User;
+import bssm.bsmauth.domain.user.repositories.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
