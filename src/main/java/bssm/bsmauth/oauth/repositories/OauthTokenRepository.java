@@ -9,7 +9,7 @@ import java.util.Optional;
 @Repository
 public interface OauthTokenRepository extends JpaRepository<OauthToken, String> {
 
-    Optional<OauthToken> findByUsercode(int usercode);
+    Optional<OauthToken> findByUsercodeAndClientId(int usercode, String clientId);
 
-    Optional<OauthToken> findByTokenAndExpire(String id, boolean expire);
+    Optional<OauthToken> findByTokenAndExpire(String token, boolean expire);
 }

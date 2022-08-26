@@ -45,7 +45,7 @@ public class OauthService {
         if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
 
         // 이미 인증이 되었다면
-        if (oauthTokenRepository.findByUsercode(user.getUsercode()).isPresent()) {
+        if (oauthTokenRepository.findByUsercodeAndClientId(user.getUsercode(), clientId).isPresent()) {
             return OauthAuthenticationResponseDto.builder()
                     .authorized(true)
                     .build();
@@ -94,7 +94,7 @@ public class OauthService {
         authCode.setExpire(true);
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUsercode(authCode.getUsercode());
+        Optional<OauthToken> token = oauthTokenRepository.findByUsercodeAndClientId(authCode.getUsercode(), dto.getClientId());
         if (token.isPresent()) {
             return OauthTokenResponseDto.builder()
                     .token(token.get().getToken())
