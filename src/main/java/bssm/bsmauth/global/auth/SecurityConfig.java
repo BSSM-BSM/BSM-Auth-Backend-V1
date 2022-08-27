@@ -29,7 +29,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .antMatchers(HttpMethod.POST, "/user", "/user/login", "/user/pw/token", "/user/mail/**")
+                .antMatchers(HttpMethod.POST, "/user/student", "/user/login", "/user/pw/token", "/user/mail/**")
                 .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource");
     }
 

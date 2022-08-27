@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.user.entities;
 
+import bssm.bsmauth.domain.user.dto.response.StudentResponseDto;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -13,16 +14,13 @@ public class Student {
 
     @Id
     @Column(length = 10)
-    private String uniqNo;
+    private String studentId;
 
     @Column(columnDefinition = "INT(1) UNSIGNED")
     private boolean codeAvailable;
 
     @Column(length = 8)
     private String authCode;
-
-    @Column(columnDefinition = "INT(1) UNSIGNED")
-    private int level;
 
     @Column(columnDefinition = "year")
     private int enrolledAt;
@@ -47,16 +45,25 @@ public class Student {
     }
 
     @Builder
-    public Student(String uniqNo, boolean codeAvailable, String authCode, int level, int enrolledAt, int grade, int classNo, int studentNo, String name, String email) {
-        this.uniqNo = uniqNo;
+    public Student(String studentId, boolean codeAvailable, String authCode, int enrolledAt, int grade, int classNo, int studentNo, String name, String email) {
+        this.studentId = studentId;
         this.codeAvailable = codeAvailable;
         this.authCode = authCode;
-        this.level = level;
         this.enrolledAt = enrolledAt;
         this.grade = grade;
         this.classNo = classNo;
         this.studentNo = studentNo;
         this.name = name;
         this.email = email;
+    }
+
+    public StudentResponseDto studentInfo() {
+        return StudentResponseDto.builder()
+                .enrolledAt(enrolledAt)
+                .grade(grade)
+                .classNo(classNo)
+                .studentNo(studentNo)
+                .name(name)
+                .build();
     }
 }

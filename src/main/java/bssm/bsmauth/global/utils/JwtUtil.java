@@ -1,6 +1,7 @@
 package bssm.bsmauth.global.utils;
 
-import bssm.bsmauth.domain.user.entities.RefreshToken;
+import bssm.bsmauth.domain.user.type.UserRole;
+import bssm.bsmauth.global.auth.RefreshToken;
 import bssm.bsmauth.domain.user.entities.Student;
 import bssm.bsmauth.domain.user.entities.User;
 import bssm.bsmauth.domain.user.repositories.RefreshTokenRepository;
@@ -31,11 +32,11 @@ public class JwtUtil {
 
     public String createAccessToken(User user) {
         Claims claims = Jwts.claims();
-        claims.put("code", user.getUsercode());
-        claims.put("level", user.getLevel());
+        claims.put("code", user.getCode());
+        claims.put("role", user.getRole());
         claims.put("id", user.getId());
         claims.put("nickname", user.getNickname());
-        claims.put("uniqNo", user.getUniqNo());
+        claims.put("studentId", user.getStudentId());
         claims.put("enrolledAt", user.getStudent().getEnrolledAt());
         claims.put("grade", user.getStudent().getGrade());
         claims.put("classNo", user.getStudent().getClassNo());
@@ -44,7 +45,7 @@ public class JwtUtil {
         return createToken(claims, JWT_TOKEN_MAX_TIME);
     }
 
-    public String createRefreshToken(int usercode) {
+    public String createRefreshToken(Long usercode) {
         SecureRandom secureRandom = new SecureRandom();
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);
@@ -89,12 +90,12 @@ public class JwtUtil {
                 .build();
 
         return User.builder()
-                .usercode(claims.get("code", Integer.class))
-                .level(claims.get("level", Integer.class))
+                .code(claims.get("code", Long.class))
+                .role(UserRole.valueOf(claims.get("role", String.class)))
                 .id(claims.get("id", String.class))
                 .nickname(claims.get("nickname", String.class))
                 .student(student)
-                .uniqNo(claims.get("uniqNo", String.class))
+                .studentId(claims.get("studentId", String.class))
                 .build();
     }
 

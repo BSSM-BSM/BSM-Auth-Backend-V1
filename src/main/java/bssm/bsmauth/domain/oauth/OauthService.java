@@ -45,7 +45,7 @@ public class OauthService {
         if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
 
         // 이미 인증이 되었다면
-        if (oauthTokenRepository.findByUsercodeAndClientId(user.getUsercode(), clientId).isPresent()) {
+        if (oauthTokenRepository.findByUsercodeAndClientId(user.getCode(), clientId).isPresent()) {
             return OauthAuthenticationResponseDto.builder()
                     .authorized(true)
                     .build();
@@ -72,7 +72,7 @@ public class OauthService {
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(getRandomStr(32))
-                .usercode(user.getUsercode())
+                .usercode(user.getCode())
                 .oauthClient(client)
                 .build();
         oauthAuthCodeRepository.save(authCode);
@@ -134,7 +134,7 @@ public class OauthService {
         OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
         scopeList.forEach(scope -> {
             switch (scope) {
-                case "code" -> oauthUserDto.code(user.getUsercode());
+                case "code" -> oauthUserDto.code(user.getCode());
                 case "nickname" -> oauthUserDto.nickname(user.getNickname());
                 case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
                 case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
@@ -161,7 +161,7 @@ public class OauthService {
                 .domain(dto.getDomain())
                 .serviceName(dto.getServiceName())
                 .redirectURI(dto.getRedirectURI())
-                .usercode(user.getUsercode())
+                .usercode(user.getCode())
                 .build();
 
         List<OauthClientScope> clientScopeList = new ArrayList<>();
@@ -178,7 +178,7 @@ public class OauthService {
     }
 
     public List<OauthClientResponseDto> getClientList(User user) {
-        List<OauthClient> clientList = oauthClientRepository.findByUsercode(user.getUsercode());
+        List<OauthClient> clientList = oauthClientRepository.findByUsercode(user.getCode());
 
         List<OauthClientResponseDto> clientResponseDtoList = new ArrayList<>();
 
@@ -212,7 +212,7 @@ public class OauthService {
         OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
                 () -> {throw new NotFoundException("클라이언트를 찾을 수 없습니다");}
         );
-        if (client.getUsercode() != user.getUsercode()) {
+        if (!client.getUsercode().equals(user.getCode())) {
             throw new BadRequestException("권한이 없습니다");
         }
 

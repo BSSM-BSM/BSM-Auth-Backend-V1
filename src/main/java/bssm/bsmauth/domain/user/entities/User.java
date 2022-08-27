@@ -1,19 +1,20 @@
 package bssm.bsmauth.domain.user.entities;
 
+import bssm.bsmauth.domain.user.type.UserRole;
+import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(columnDefinition = "INT UNSIGNED")
-    private int usercode;
+    private Long code;
 
     @Column(nullable = false, length = 20, unique = true)
     private String id;
@@ -21,18 +22,23 @@ public class User {
     @Column(nullable = false, length = 40, unique = true)
     private String nickname;
 
-    @Column(nullable = false, length = 10)
-    private String uniqNo;
+    @Column(length = 16)
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @Column(length = 10)
+    private String studentId;
 
     @OneToOne
-    @JoinColumn(name = "uniqNo", insertable = false, updatable = false)
+    @JoinColumn(name = "studentId", insertable = false, updatable = false)
     private Student student;
 
-    @Column(nullable = false)
-    private int level;
+    @Column
+    private Long teacherId;
 
-    @Column(nullable = false)
-    private Date createdAt;
+    @OneToOne
+    @JoinColumn(name = "teacherId", insertable = false, updatable = false)
+    private Teacher teacher;
 
     @Column(nullable = false, length = 64)
     private String pw;
@@ -41,14 +47,15 @@ public class User {
     private String pwSalt;
 
     @Builder
-    public User(int usercode, String id, String nickname, String uniqNo, Student student, int level, Date createdAt, String pw, String pwSalt) {
-        this.usercode = usercode;
+    public User(Long code, String id, String nickname, UserRole role, String studentId, Student student, Long teacherId, Teacher teacher, String pw, String pwSalt) {
+        this.code = code;
         this.id = id;
         this.nickname = nickname;
-        this.uniqNo = uniqNo;
+        this.role = role;
+        this.studentId = studentId;
         this.student = student;
-        this.level = level;
-        this.createdAt = createdAt;
+        this.teacherId = teacherId;
+        this.teacher = teacher;
         this.pw = pw;
         this.pwSalt = pwSalt;
     }

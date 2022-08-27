@@ -31,7 +31,7 @@ public class OauthClient extends BaseTimeEntity {
     private String redirectURI;
 
     @Column(columnDefinition = "INT UNSIGNED")
-    private int usercode;
+    private Long usercode;
 
     @ManyToOne
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
@@ -41,7 +41,7 @@ public class OauthClient extends BaseTimeEntity {
     private List<OauthClientScope> scopes = new ArrayList<>();
 
     @Builder
-    public OauthClient(String id, String clientSecret, String domain, String serviceName, String redirectURI, int usercode, User user, List<OauthClientScope> scopes) {
+    public OauthClient(String id, String clientSecret, String domain, String serviceName, String redirectURI, Long usercode, User user, List<OauthClientScope> scopes) {
         this.id = id;
         this.clientSecret = clientSecret;
         this.domain = domain;

@@ -1,6 +1,9 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
+import bssm.bsmauth.domain.user.dto.response.StudentResponseDto;
+import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
+import bssm.bsmauth.domain.user.type.UserRole;
 import bssm.bsmauth.global.exception.exceptions.BadRequestException;
 import bssm.bsmauth.global.exception.exceptions.ConflictException;
 import bssm.bsmauth.global.exception.exceptions.InternalServerException;
@@ -45,29 +48,25 @@ public class UserService {
     @Value("${env.file.path.upload.profile}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
-    public User userInfo(int usercode) {
-        User user = userRepository.findById(usercode).orElseThrow(
+    public UserResponseDto userInfo(User user) {
+        User userInfo = userRepository.findById(user.getCode()).orElseThrow(
                 () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
         );
 
-        Student studentInfo = Student.builder()
-                .enrolledAt(user.getStudent().getEnrolledAt())
-                .grade(user.getStudent().getGrade())
-                .classNo(user.getStudent().getClassNo())
-                .studentNo(user.getStudent().getStudentNo())
-                .name(user.getStudent().getName())
-                .build();
+        UserResponseDto.UserResponseDtoBuilder userBuilder = UserResponseDto.builder()
+                .code(userInfo.getCode())
+                .nickname(userInfo.getNickname())
+                .role(userInfo.getRole());
+        switch (user.getRole()){
+            case STUDENT, ADMIN_STUDENT -> userBuilder = userBuilder.student(user.getStudent().studentInfo());
+            default -> throw new NotFoundException("유저의 역할을 찾을 수 없습니다");
+        }
 
-        return User.builder()
-                .usercode(user.getUsercode())
-                .nickname(user.getNickname())
-                .createdAt(user.getCreatedAt())
-                .student(studentInfo)
-                .build();
+        return userBuilder.build();
     }
 
     @Transactional
-    public User signUp(UserSignUpDto dto) throws Exception {
+    public User studentSignUp(UserSignUpDto dto) throws Exception {
 
         if (!dto.getPw().equals(dto.getCheckPw())) {
             throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
@@ -97,8 +96,8 @@ public class UserService {
                 .pw(encryptedPw)
                 .pwSalt(salt)
                 .nickname(dto.getNickname())
-                .uniqNo(studentInfo.getUniqNo())
-                .level(studentInfo.getLevel())
+                .studentId(studentInfo.getStudentId())
+                .role(UserRole.STUDENT)
                 .build();
 
         return userRepository.save(user);
@@ -117,7 +116,7 @@ public class UserService {
         if (!dto.getNewPw().equals(dto.getCheckNewPw())) {
             throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
         }
-        User newUser = userRepository.findById(user.getUsercode()).orElseThrow(
+        User newUser = userRepository.findById(user.getCode()).orElseThrow(
                 () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
         );
 
@@ -142,7 +141,7 @@ public class UserService {
         resetPwTokenRepository.save(token);
     }
 
-    public ResetPwTokenInfoDto getResetPwTokenInfo(String token) throws Exception {
+    public ResetPwTokenInfoDto getResetPwTokenInfo(String token) {
         ResetPwToken tokenInfo = resetPwTokenRepository.findByToken(token).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
@@ -155,7 +154,7 @@ public class UserService {
     public User updateNickname(User user, UserUpdateNicknameDto dto) {
         userRepository.findByNickname(dto.getNewNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
-        User newUser = userRepository.findById(user.getUsercode()).orElseThrow(
+        User newUser = userRepository.findById(user.getCode()).orElseThrow(
                 () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
         );
 
@@ -166,7 +165,7 @@ public class UserService {
     public void uploadProfile(User user, MultipartFile file) {
         if (file.getOriginalFilename() == null) throw new BadRequestException();
         String fileExt = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")+1);
-        String fileId = String.valueOf(user.getUsercode());
+        String fileId = String.valueOf(user.getCode());
 
         File dir = new File(PUBLIC_RESOURCE_PATH + PROFILE_UPLOAD_RESOURCE_PATH);
         File newFile = new File(dir.getPath() + "/" + fileId + "." + fileExt);
@@ -297,7 +296,7 @@ public class UserService {
 
         ResetPwToken token = ResetPwToken.builder()
                 .token(getRandomStr(32))
-                .usercode(user.getUsercode())
+                .usercode(user.getCode())
                 .used(false)
                 .expireIn(expireIn)
                 .build();

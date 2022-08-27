@@ -1,5 +1,6 @@
-package bssm.bsmauth.domain.user.entities;
+package bssm.bsmauth.global.auth;
 
+import bssm.bsmauth.domain.user.entities.User;
 import lombok.*;
 
 import javax.persistence.*;
@@ -18,7 +19,7 @@ public class RefreshToken {
     private boolean isAvailable;
 
     @Column(columnDefinition = "INT UNSIGNED")
-    private int usercode;
+    private Long usercode;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
@@ -28,7 +29,7 @@ public class RefreshToken {
     private Date createdAt;
 
     @Builder
-    public RefreshToken(String token, boolean isAvailable, int usercode, User user, Date createdAt) {
+    public RefreshToken(String token, boolean isAvailable, Long usercode, User user, Date createdAt) {
         this.token = token;
         this.isAvailable = isAvailable;
         this.usercode = usercode;

@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
 import bssm.bsmauth.domain.user.dto.response.UserLoginResponseDto;
+import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserUpdateNicknameResponseDto;
 import bssm.bsmauth.domain.user.entities.User;
 import bssm.bsmauth.global.utils.CookieUtil;
@@ -36,8 +37,8 @@ public class UserController {
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     @GetMapping()
-    public User getUserInfo() {
-        return userService.userInfo(userUtil.getCurrentUser().getUsercode());
+    public UserResponseDto getUserInfo() {
+        return userService.userInfo(userUtil.getCurrentUser());
     }
 
     @DeleteMapping("logout")
@@ -46,9 +47,9 @@ public class UserController {
         res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
     }
 
-    @PostMapping()
-    public void signUp(@RequestBody UserSignUpDto dto) throws Exception {
-        userService.signUp(dto);
+    @PostMapping("student")
+    public void studentSignUp(@RequestBody UserSignUpDto dto) throws Exception {
+        userService.studentSignUp(dto);
     }
 
     @PostMapping("login")
@@ -56,7 +57,7 @@ public class UserController {
         User user = userService.login(dto);
 
         String token = jwtUtil.createAccessToken(user);
-        String refreshToken = jwtUtil.createRefreshToken(user.getUsercode());
+        String refreshToken = jwtUtil.createRefreshToken(user.getCode());
         Cookie tokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
         Cookie refreshTokenCookie = cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, JWT_REFRESH_TOKEN_MAX_TIME);
         res.addCookie(tokenCookie);

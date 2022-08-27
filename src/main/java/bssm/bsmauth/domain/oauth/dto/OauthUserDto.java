@@ -9,7 +9,7 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class OauthUserDto {
 
-    private Integer code;
+    private Long code;
     private String nickname;
     private Integer enrolledAt;
     private Integer grade;

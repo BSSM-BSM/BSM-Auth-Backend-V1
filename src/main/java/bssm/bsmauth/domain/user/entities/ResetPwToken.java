@@ -22,14 +22,14 @@ public class ResetPwToken extends BaseTimeEntity {
     private Date expireIn;
 
     @Column(columnDefinition = "INT UNSIGNED")
-    private int usercode;
+    private Long usercode;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
     private User user;
 
     @Builder
-    public ResetPwToken(String token, boolean used, Date expireIn, int usercode, User user) {
+    public ResetPwToken(String token, boolean used, Date expireIn, Long usercode, User user) {
         this.token = token;
         this.used = used;
         this.expireIn = expireIn;
