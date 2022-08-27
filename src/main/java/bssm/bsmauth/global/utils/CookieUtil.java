@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 @Service
 public class CookieUtil {
 
-    @Value("${COOKIE_DOMAIN}")
+    @Value("${env.cookie.domain}")
     private String COOKIE_DOMAIN;
-    @Value("${COOKIE_SECURE}")
+    @Value("${env.cookie.secure}")
     private boolean COOKIE_SECURE;
 
     public Cookie createCookie(String name, String value, long time) {

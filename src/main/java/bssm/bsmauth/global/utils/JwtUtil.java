@@ -22,11 +22,11 @@ import java.util.HexFormat;
 public class JwtUtil {
 
     private final RefreshTokenRepository refreshTokenRepository;
-    @Value("${JWT_SECRET_KEY}")
+    @Value("${env.jwt.secretKey}")
     private String JWT_SECRET_KEY;
-    @Value("${JWT_TOKEN_MAX_TIME}")
+    @Value("${env.jwt.time.token}")
     private long JWT_TOKEN_MAX_TIME;
-    @Value("${JWT_REFRESH_TOKEN_MAX_TIME}")
+    @Value("${env.jwt.time.refreshToken}")
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     public String createAccessToken(User user) {

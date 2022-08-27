@@ -1,4 +1,4 @@
-package bssm.bsmauth.global.exceptions;
+package bssm.bsmauth.global.exception;
 
 import lombok.Getter;
 

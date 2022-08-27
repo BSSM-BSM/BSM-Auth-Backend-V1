@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.oauth.utils;
 
-import bssm.bsmauth.global.exceptions.NotFoundException;
+import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.entities.OauthScope;
 import bssm.bsmauth.domain.oauth.repositories.OauthScopeRepository;
 import lombok.RequiredArgsConstructor;

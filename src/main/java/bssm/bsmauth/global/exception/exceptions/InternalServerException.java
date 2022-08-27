@@ -1,5 +1,6 @@
-package bssm.bsmauth.global.exceptions;
+package bssm.bsmauth.global.exception.exceptions;
 
+import bssm.bsmauth.global.exception.HttpError;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

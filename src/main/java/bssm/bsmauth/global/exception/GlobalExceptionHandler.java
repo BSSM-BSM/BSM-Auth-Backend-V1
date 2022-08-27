@@ -1,7 +1,5 @@
-package bssm.bsmauth.global;
+package bssm.bsmauth.global.exception;
 
-import bssm.bsmauth.global.exceptions.HttpError;
-import bssm.bsmauth.global.exceptions.HttpErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

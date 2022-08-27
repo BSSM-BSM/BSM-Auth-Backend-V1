@@ -1,7 +1,7 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.global.exceptions.NotFoundException;
-import bssm.bsmauth.global.exceptions.UnAuthorizedException;
+import bssm.bsmauth.global.exception.exceptions.NotFoundException;
+import bssm.bsmauth.global.exception.exceptions.UnAuthorizedException;
 import bssm.bsmauth.global.utils.CookieUtil;
 import bssm.bsmauth.global.utils.JwtUtil;
 import bssm.bsmauth.domain.user.entities.User;
@@ -30,11 +30,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CookieUtil cookieUtil;
 
-    @Value("${TOKEN_COOKIE_NAME}")
+    @Value("${env.cookie.name.token}")
     private String TOKEN_COOKIE_NAME;
-    @Value("${REFRESH_TOKEN_COOKIE_NAME}")
+    @Value("${env.cookie.name.refreshToken}")
     private String REFRESH_TOKEN_COOKIE_NAME;
-    @Value("${JWT_TOKEN_MAX_TIME}")
+    @Value("${env.jwt.time.token}")
     private long JWT_TOKEN_MAX_TIME;
 
     @Override

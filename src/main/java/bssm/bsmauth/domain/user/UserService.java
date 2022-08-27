@@ -1,10 +1,10 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
-import bssm.bsmauth.global.exceptions.BadRequestException;
-import bssm.bsmauth.global.exceptions.ConflictException;
-import bssm.bsmauth.global.exceptions.InternalServerException;
-import bssm.bsmauth.global.exceptions.NotFoundException;
+import bssm.bsmauth.global.exception.exceptions.BadRequestException;
+import bssm.bsmauth.global.exception.exceptions.ConflictException;
+import bssm.bsmauth.global.exception.exceptions.InternalServerException;
+import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import bssm.bsmauth.global.mail.MailService;
 import bssm.bsmauth.global.mail.dto.MailDto;
 import bssm.bsmauth.domain.user.dto.response.ResetPwTokenInfoDto;
@@ -40,9 +40,9 @@ public class UserService {
     private final StudentRepository studentRepository;
     private final MailService mailService;
     private final ResetPwTokenRepository resetPwTokenRepository;
-    @Value("${PUBLIC_RESOURCE_PATH}")
+    @Value("${env.file.path.base}")
     private String PUBLIC_RESOURCE_PATH;
-    @Value("${PROFILE_UPLOAD_RESOURCE_PATH}")
+    @Value("${env.file.path.upload.profile}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
     public User userInfo(int usercode) {

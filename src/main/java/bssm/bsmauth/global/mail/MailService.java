@@ -1,6 +1,6 @@
 package bssm.bsmauth.global.mail;
 
-import bssm.bsmauth.global.exceptions.InternalServerException;
+import bssm.bsmauth.global.exception.exceptions.InternalServerException;
 import bssm.bsmauth.global.mail.dto.MailDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +17,7 @@ import javax.mail.internet.MimeUtility;
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-    @Value("${MAIL_FROM}")
+    @Value("${env.mail.from}")
     private String MAIL_FROM;
 
     public void sendMail(MailDto mailDto) {
