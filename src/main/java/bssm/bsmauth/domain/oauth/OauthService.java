@@ -2,8 +2,11 @@ package bssm.bsmauth.domain.oauth;
 
 import bssm.bsmauth.domain.oauth.dto.response.*;
 import bssm.bsmauth.domain.oauth.entities.*;
+import bssm.bsmauth.domain.oauth.type.OauthAccessType;
 import bssm.bsmauth.domain.oauth.utils.OauthScopeUtil;
 import bssm.bsmauth.global.exception.exceptions.BadRequestException;
+import bssm.bsmauth.global.exception.exceptions.ForbiddenException;
+import bssm.bsmauth.global.exception.exceptions.InternalServerException;
 import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.dto.OauthUserDto;
 import bssm.bsmauth.domain.oauth.dto.request.CreateOauthClientDto;
@@ -39,10 +42,7 @@ public class OauthService {
     private final OauthScopeUtil oauthScopeUtil;
 
     public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
-        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
-                () -> {throw new BadRequestException("Oauth Authentication Failed");}
-        );
-        if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
+        OauthClient client = checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
         if (oauthTokenRepository.findByUsercodeAndClientId(user.getCode(), clientId).isPresent()) {
@@ -65,10 +65,7 @@ public class OauthService {
     }
 
     public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationDto dto) {
-        OauthClient client = oauthClientRepository.findById(dto.getClientId()).orElseThrow(
-                () -> {throw new BadRequestException("Oauth Authentication Failed");}
-        );
-        if (!client.getRedirectURI().equals(dto.getRedirectURI())) throw new BadRequestException("Oauth Authentication Failed");
+        OauthClient client = checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(getRandomStr(32))
@@ -80,6 +77,23 @@ public class OauthService {
         return OauthAuthorizationResponseDto.builder()
                 .redirectURI(client.getRedirectURI() + "?code=" + authCode.getCode())
                 .build();
+    }
+
+    private OauthClient checkClient(User user, String clientId, String redirectURI) {
+        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
+                () -> {throw new BadRequestException("Oauth Authentication Failed");}
+        );
+        if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
+        if (client.getAccess() != OauthAccessType.ALL && client.getAccess() != OauthAccessType.valueOf(user.getRole().name())) {
+            String msg;
+            switch (client.getAccess()) {
+                case STUDENT -> msg = "해당 서비스는 학생만 사용할 수 있습니다";
+                case TEACHER -> msg = "해당 서비스는 선생님만 사용할 수 있습니다";
+                default -> throw new InternalServerException();
+            }
+            throw new ForbiddenException(msg);
+        }
+        return client;
     }
 
     public OauthTokenResponseDto getToken(OauthGetTokenDto dto) {
@@ -133,21 +147,35 @@ public class OauthService {
 
         OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
         scopeList.forEach(scope -> {
-            switch (scope) {
-                case "code" -> oauthUserDto.code(user.getCode());
-                case "nickname" -> oauthUserDto.nickname(user.getNickname());
-                case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
-                case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
-                case "classNo" -> oauthUserDto.classNo(user.getStudent().getClassNo());
-                case "studentNo" -> oauthUserDto.studentNo(user.getStudent().getStudentNo());
-                case "name" -> oauthUserDto.name(user.getStudent().getName());
-                case "email" -> oauthUserDto.email(user.getStudent().getEmail());
+            switch (user.getRole()) {
+                case STUDENT -> {
+                    switch (scope) {
+                        case "code" -> oauthUserDto.code(user.getCode());
+                        case "nickname" -> oauthUserDto.nickname(user.getNickname());
+                        case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
+                        case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
+                        case "classNo" -> oauthUserDto.classNo(user.getStudent().getClassNo());
+                        case "studentNo" -> oauthUserDto.studentNo(user.getStudent().getStudentNo());
+                        case "name" -> oauthUserDto.name(user.getStudent().getName());
+                        case "email" -> oauthUserDto.email(user.getStudent().getEmail());
+                    }
+                }
+                case TEACHER -> {
+                    switch (scope) {
+                        case "code" -> oauthUserDto.code(user.getCode());
+                        case "nickname" -> oauthUserDto.nickname(user.getNickname());
+                        case "name" -> oauthUserDto.name(user.getTeacher().getName());
+                        case "email" -> oauthUserDto.email(user.getTeacher().getEmail());
+                    }
+                }
+                default -> throw new InternalServerException();
             }
         });
 
         return OauthResourceResponseDto.builder()
                 .scopeList(scopeList)
                 .user(oauthUserDto.build())
+                .role(user.getRole())
                 .build();
     }
 
@@ -162,6 +190,7 @@ public class OauthService {
                 .serviceName(dto.getServiceName())
                 .redirectURI(dto.getRedirectURI())
                 .usercode(user.getCode())
+                .access(dto.getAccess())
                 .build();
 
         List<OauthClientScope> clientScopeList = new ArrayList<>();
@@ -196,6 +225,7 @@ public class OauthService {
                             .serviceName(client.getServiceName())
                             .redirectURI(client.getRedirectURI())
                             .scopeList(scopeList)
+                            .access(client.getAccess())
                             .build()
             );
         });

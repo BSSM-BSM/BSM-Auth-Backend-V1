@@ -58,7 +58,7 @@ public class UserService {
                 .nickname(userInfo.getNickname())
                 .role(userInfo.getRole());
         switch (user.getRole()){
-            case STUDENT, ADMIN_STUDENT -> userBuilder = userBuilder.student(user.getStudent().studentInfo());
+            case STUDENT -> userBuilder = userBuilder.student(user.getStudent().studentInfo());
             case TEACHER -> userBuilder = userBuilder.teacher(user.getTeacher().teacherInfo());
             default -> throw new NotFoundException("유저의 역할을 찾을 수 없습니다");
         }

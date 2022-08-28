@@ -1,6 +1,8 @@
 package bssm.bsmauth.domain.oauth.entities;
 
 
+import bssm.bsmauth.domain.oauth.type.OauthAccessType;
+import bssm.bsmauth.domain.user.type.UserRole;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.domain.user.entities.User;
 import lombok.*;
@@ -37,11 +39,15 @@ public class OauthClient extends BaseTimeEntity {
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
     private User user;
 
+    @Column(length = 12, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OauthAccessType access;
+
     @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<OauthClientScope> scopes = new ArrayList<>();
 
     @Builder
-    public OauthClient(String id, String clientSecret, String domain, String serviceName, String redirectURI, Long usercode, User user, List<OauthClientScope> scopes) {
+    public OauthClient(String id, String clientSecret, String domain, String serviceName, String redirectURI, Long usercode, User user, OauthAccessType access, List<OauthClientScope> scopes) {
         this.id = id;
         this.clientSecret = clientSecret;
         this.domain = domain;
@@ -49,6 +55,7 @@ public class OauthClient extends BaseTimeEntity {
         this.redirectURI = redirectURI;
         this.usercode = usercode;
         this.user = user;
+        this.access = access;
         this.scopes = scopes;
     }
 }

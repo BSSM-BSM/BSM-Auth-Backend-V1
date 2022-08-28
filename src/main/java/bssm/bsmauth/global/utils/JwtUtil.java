@@ -40,7 +40,7 @@ public class JwtUtil {
         claims.put("nickname", user.getNickname());
 
         switch (user.getRole()) {
-            case STUDENT, ADMIN_STUDENT -> {
+            case STUDENT -> {
                 claims.put("studentId", user.getStudentId());
                 claims.put("enrolledAt", user.getStudent().getEnrolledAt());
                 claims.put("grade", user.getStudent().getGrade());
@@ -99,7 +99,7 @@ public class JwtUtil {
                 .nickname(claims.get("nickname", String.class));
 
         switch (UserRole.valueOf(claims.get("role", String.class))) {
-            case STUDENT, ADMIN_STUDENT -> {
+            case STUDENT -> {
                 Student student = Student.builder()
                         .enrolledAt(claims.get("enrolledAt", Integer.class))
                         .grade(claims.get("grade", Integer.class))
