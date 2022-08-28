@@ -2,7 +2,7 @@ package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
 import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
-import bssm.bsmauth.domain.user.dto.request.teacher.SendTeacherAuthCodeMailDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherEmailDto;
 import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
 import bssm.bsmauth.domain.user.dto.response.UserLoginResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
@@ -114,13 +114,18 @@ public class UserController {
     }
 
     @PostMapping("mail/authcode/teacher")
-    public void sendAuthCodeMail(@RequestBody SendTeacherAuthCodeMailDto dto) {
+    public void sendAuthCodeMail(@RequestBody TeacherEmailDto dto) {
         userService.teacherAuthCodeMail(dto);
     }
 
     @PostMapping("mail/id/student")
     public void sendFindIdMail(@RequestBody FindStudentDto dto) {
         userService.studentFindIdMail(dto);
+    }
+
+    @PostMapping("mail/id/teacher")
+    public void sendFindIdMail(@RequestBody TeacherEmailDto dto) {
+        userService.teacherFindIdMail(dto);
     }
 
     @PostMapping("mail/pw")

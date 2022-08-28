@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @AllArgsConstructor
 @RequiredArgsConstructor
-public class SendTeacherAuthCodeMailDto {
+public class TeacherEmailDto {
 
     private String email;
 }

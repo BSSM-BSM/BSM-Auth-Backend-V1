@@ -2,7 +2,7 @@ package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
 import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
-import bssm.bsmauth.domain.user.dto.request.teacher.SendTeacherAuthCodeMailDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherEmailDto;
 import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.entities.*;
@@ -231,7 +231,7 @@ public class UserService {
     }
 
     @Transactional
-    public void teacherAuthCodeMail(SendTeacherAuthCodeMailDto dto) {
+    public void teacherAuthCodeMail(TeacherEmailDto dto) {
         if (!Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
             throw new BadRequestException("올바른 주소가 아닙니다");
         }
@@ -271,6 +271,14 @@ public class UserService {
         );
 
         userMailService.sendFindIdMail(student.getEmail(), user.getId());
+    }
+
+    public void teacherFindIdMail(TeacherEmailDto dto) {
+        User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, dto.getEmail()).orElseThrow(
+                () -> {throw new NotFoundException("계정을 찾을 수 없습니다");}
+        );
+
+        userMailService.sendFindIdMail(user.getTeacher().getEmail(), user.getId());
     }
 
     public void resetPwMail(SendResetPwMailDto dto) {
