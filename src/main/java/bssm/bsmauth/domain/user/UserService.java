@@ -1,9 +1,12 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
+import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.SendTeacherAuthCodeMailDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
-import bssm.bsmauth.domain.user.entities.TeacherAuthCode;
-import bssm.bsmauth.domain.user.repositories.TeacherAuthCodeRepository;
+import bssm.bsmauth.domain.user.entities.*;
+import bssm.bsmauth.domain.user.repositories.*;
 import bssm.bsmauth.domain.user.type.UserTokenType;
 import bssm.bsmauth.domain.user.type.UserRole;
 import bssm.bsmauth.global.exception.exceptions.BadRequestException;
@@ -11,12 +14,6 @@ import bssm.bsmauth.global.exception.exceptions.ConflictException;
 import bssm.bsmauth.global.exception.exceptions.InternalServerException;
 import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import bssm.bsmauth.domain.user.dto.response.ResetPwTokenInfoDto;
-import bssm.bsmauth.domain.user.entities.UserToken;
-import bssm.bsmauth.domain.user.entities.Student;
-import bssm.bsmauth.domain.user.entities.User;
-import bssm.bsmauth.domain.user.repositories.TokenRepository;
-import bssm.bsmauth.domain.user.repositories.StudentRepository;
-import bssm.bsmauth.domain.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,6 +39,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
+    private final TeacherRepository teacherRepository;
     private final TokenRepository tokenRepository;
     private final TeacherAuthCodeRepository teacherAuthCodeRepository;
     private final UserMailService userMailService;
@@ -61,6 +59,7 @@ public class UserService {
                 .role(userInfo.getRole());
         switch (user.getRole()){
             case STUDENT, ADMIN_STUDENT -> userBuilder = userBuilder.student(user.getStudent().studentInfo());
+            case TEACHER -> userBuilder = userBuilder.teacher(user.getTeacher().teacherInfo());
             default -> throw new NotFoundException("유저의 역할을 찾을 수 없습니다");
         }
 
@@ -69,38 +68,61 @@ public class UserService {
 
     @Transactional
     public void studentSignUp(UserSignUpDto dto) throws Exception {
-        if (!dto.getPw().equals(dto.getCheckPw())) {
-            throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
-        }
-
-        userRepository.findById(dto.getId())
-                .ifPresent(u -> {throw new ConflictException("이미 존재하는 ID 입니다");});
-        userRepository.findByNickname(dto.getNickname())
-                .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
-
         Student studentInfo = studentRepository.findByAuthCode(dto.getAuthCode())
                 .orElseThrow(() -> {throw new NotFoundException("인증코드를 찾을 수 없습니다");});
         if (!studentInfo.isCodeAvailable()) {
             throw new BadRequestException("이미 사용된 인증코드입니다");
         }
+        User user = signUp(dto)
+                .studentId(studentInfo.getStudentId())
+                .role(UserRole.STUDENT)
+                .build();
 
         studentInfo.setCodeAvailable(false);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void teacherSignUp(TeacherSignUpDto dto) throws Exception {
+        TeacherAuthCode teacherAuthCode = teacherAuthCodeRepository.findByTokenAndType(dto.getAuthCode(), UserTokenType.AUTH_CODE)
+                .orElseThrow(() -> {throw new NotFoundException("인증코드를 찾을 수 없습니다");});
+        if (teacherAuthCode.isUsed()) {
+            throw new BadRequestException("이미 사용된 인증코드입니다");
+        }
+        Teacher teacher = teacherRepository.save(
+                Teacher.builder()
+                        .email(teacherAuthCode.getEmail())
+                        .name(dto.getName())
+                        .build()
+        );
+        User user = signUp(dto)
+                .teacherId(teacher.getTeacherId())
+                .role(UserRole.TEACHER)
+                .build();
+
+        teacherAuthCodeRepository.delete(teacherAuthCode);
+        userRepository.save(user);
+    }
+
+    private User.UserBuilder signUp(UserSignUpDto dto) throws Exception {
+        if (!dto.getPw().equals(dto.getCheckPw())) {
+            throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
+        }
+        userRepository.findById(dto.getId())
+                .ifPresent(u -> {throw new ConflictException("이미 존재하는 ID 입니다");});
+        userRepository.findByNickname(dto.getNickname())
+                .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
 
         // 비밀번호 솔트 값 생성
         String salt = getRandomStr(64);
         // 비밀번호 암호화
         String encryptedPw = encryptPw(salt, dto.getPw());
 
-        User user = User.builder()
+        return User.builder()
                 .id(dto.getId())
                 .pw(encryptedPw)
                 .pwSalt(salt)
-                .nickname(dto.getNickname())
-                .studentId(studentInfo.getStudentId())
-                .role(UserRole.STUDENT)
-                .build();
-
-        userRepository.save(user);
+                .nickname(dto.getNickname());
     }
 
     public User login(UserLoginDto dto) throws Exception {
@@ -212,6 +234,9 @@ public class UserService {
     public void teacherAuthCodeMail(SendTeacherAuthCodeMailDto dto) {
         if (!Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
             throw new BadRequestException("올바른 주소가 아닙니다");
+        }
+        if (teacherRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new ConflictException("해당하는 이메일의 계정이 이미 존재합니다");
         }
         teacherAuthCodeRepository.deleteByEmail(dto.getEmail());
 

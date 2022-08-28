@@ -1,4 +1,4 @@
-package bssm.bsmauth.domain.user.dto.response;
+package bssm.bsmauth.domain.user.dto.response.student;
 
 import lombok.Builder;
 import lombok.Getter;

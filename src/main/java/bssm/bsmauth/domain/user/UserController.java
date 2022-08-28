@@ -1,6 +1,9 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
+import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.SendTeacherAuthCodeMailDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
 import bssm.bsmauth.domain.user.dto.response.UserLoginResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserUpdateNicknameResponseDto;
@@ -50,6 +53,11 @@ public class UserController {
     @PostMapping("student")
     public void studentSignUp(@RequestBody UserSignUpDto dto) throws Exception {
         userService.studentSignUp(dto);
+    }
+
+    @PostMapping("teacher")
+    public void teacherSignUp(@RequestBody TeacherSignUpDto dto) throws Exception {
+        userService.teacherSignUp(dto);
     }
 
     @PostMapping("login")

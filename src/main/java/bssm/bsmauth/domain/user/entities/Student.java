@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.user.entities;
 
-import bssm.bsmauth.domain.user.dto.response.StudentResponseDto;
+import bssm.bsmauth.domain.user.dto.response.student.StudentResponseDto;
 import lombok.*;
 
 import javax.persistence.Column;

@@ -1,4 +1,4 @@
-package bssm.bsmauth.domain.user.dto.request;
+package bssm.bsmauth.domain.user.dto.request.student;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

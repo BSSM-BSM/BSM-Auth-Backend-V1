@@ -1,10 +1,12 @@
 package bssm.bsmauth.global.utils;
 
+import bssm.bsmauth.domain.user.entities.Teacher;
 import bssm.bsmauth.domain.user.type.UserRole;
 import bssm.bsmauth.global.auth.RefreshToken;
 import bssm.bsmauth.domain.user.entities.Student;
 import bssm.bsmauth.domain.user.entities.User;
 import bssm.bsmauth.domain.user.repositories.RefreshTokenRepository;
+import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -36,12 +38,20 @@ public class JwtUtil {
         claims.put("role", user.getRole());
         claims.put("id", user.getId());
         claims.put("nickname", user.getNickname());
-        claims.put("studentId", user.getStudentId());
-        claims.put("enrolledAt", user.getStudent().getEnrolledAt());
-        claims.put("grade", user.getStudent().getGrade());
-        claims.put("classNo", user.getStudent().getClassNo());
-        claims.put("studentNo", user.getStudent().getStudentNo());
-        claims.put("name", user.getStudent().getName());
+
+        switch (user.getRole()) {
+            case STUDENT, ADMIN_STUDENT -> {
+                claims.put("studentId", user.getStudentId());
+                claims.put("enrolledAt", user.getStudent().getEnrolledAt());
+                claims.put("grade", user.getStudent().getGrade());
+                claims.put("classNo", user.getStudent().getClassNo());
+                claims.put("studentNo", user.getStudent().getStudentNo());
+                claims.put("name", user.getStudent().getName());
+            }
+            case TEACHER -> {
+                claims.put("name", user.getTeacher().getName());
+            }
+        }
         return createToken(claims, JWT_TOKEN_MAX_TIME);
     }
 
@@ -81,22 +91,37 @@ public class JwtUtil {
 
     public User getUser(String token) {
         Claims claims = extractAllClaims(token);
-        Student student = Student.builder()
-                .enrolledAt(claims.get("enrolledAt", Integer.class))
-                .grade(claims.get("grade", Integer.class))
-                .classNo(claims.get("classNo", Integer.class))
-                .studentNo(claims.get("studentNo", Integer.class))
-                .name(claims.get("name", String.class))
-                .build();
 
-        return User.builder()
+        User.UserBuilder userBuilder = User.builder()
                 .code(claims.get("code", Long.class))
                 .role(UserRole.valueOf(claims.get("role", String.class)))
                 .id(claims.get("id", String.class))
-                .nickname(claims.get("nickname", String.class))
-                .student(student)
-                .studentId(claims.get("studentId", String.class))
-                .build();
+                .nickname(claims.get("nickname", String.class));
+
+        switch (UserRole.valueOf(claims.get("role", String.class))) {
+            case STUDENT, ADMIN_STUDENT -> {
+                Student student = Student.builder()
+                        .enrolledAt(claims.get("enrolledAt", Integer.class))
+                        .grade(claims.get("grade", Integer.class))
+                        .classNo(claims.get("classNo", Integer.class))
+                        .studentNo(claims.get("studentNo", Integer.class))
+                        .name(claims.get("name", String.class))
+                        .build();
+                return userBuilder
+                        .student(student)
+                        .studentId(claims.get("studentId", String.class))
+                        .build();
+            }
+            case TEACHER -> {
+                return userBuilder
+                        .teacher(
+                                Teacher.builder()
+                                        .name(claims.get("name", String.class))
+                                        .build()
+                        ).build();
+            }
+            default -> throw new NotFoundException("유저의 역할을 찾을 수 없습니다");
+        }
     }
 
     private Claims extractAllClaims(String token) {
