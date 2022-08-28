@@ -100,18 +100,23 @@ public class UserController {
         userService.uploadProfile(userUtil.getCurrentUser(), file);
     }
 
-    @PostMapping("mail/authcode")
+    @PostMapping("mail/authcode/student")
     public void sendAuthCodeMail(@RequestBody FindStudentDto dto) {
-        userService.sendAuthCodeMail(dto);
+        userService.studentAuthCodeMail(dto);
     }
 
-    @PostMapping("mail/id")
+    @PostMapping("mail/authcode/teacher")
+    public void sendAuthCodeMail(@RequestBody SendTeacherAuthCodeMailDto dto) {
+        userService.teacherAuthCodeMail(dto);
+    }
+
+    @PostMapping("mail/id/student")
     public void sendFindIdMail(@RequestBody FindStudentDto dto) {
-        userService.sendFindIdMail(dto);
+        userService.studentFindIdMail(dto);
     }
 
     @PostMapping("mail/pw")
     public void sendResetPwMail(@RequestBody SendResetPwMailDto dto) {
-        userService.sendResetPwMail(dto);
+        userService.resetPwMail(dto);
     }
 }

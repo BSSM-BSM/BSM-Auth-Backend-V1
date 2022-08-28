@@ -1,7 +1,9 @@
 package bssm.bsmauth.domain.user.entities;
 
+import bssm.bsmauth.domain.user.type.UserTokenType;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -9,7 +11,9 @@ import java.util.Date;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ResetPwToken extends BaseTimeEntity {
+@SuperBuilder
+@Inheritance(strategy = InheritanceType.JOINED)
+public class UserToken extends BaseTimeEntity {
 
     @Id
     @Column(length = 32)
@@ -21,21 +25,16 @@ public class ResetPwToken extends BaseTimeEntity {
     @Column(nullable = false)
     private Date expireIn;
 
+    @Column(length = 16, nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserTokenType type;
+
     @Column(columnDefinition = "INT UNSIGNED")
     private Long usercode;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     @JoinColumn(name = "usercode", insertable = false, updatable = false)
     private User user;
-
-    @Builder
-    public ResetPwToken(String token, boolean used, Date expireIn, Long usercode, User user) {
-        this.token = token;
-        this.used = used;
-        this.expireIn = expireIn;
-        this.usercode = usercode;
-        this.user = user;
-    }
 
     public void setUsed(boolean isUsed) {
         this.used = isUsed;

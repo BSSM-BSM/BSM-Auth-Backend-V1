@@ -1,20 +1,20 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
-import bssm.bsmauth.domain.user.dto.response.StudentResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
+import bssm.bsmauth.domain.user.entities.TeacherAuthCode;
+import bssm.bsmauth.domain.user.repositories.TeacherAuthCodeRepository;
+import bssm.bsmauth.domain.user.type.UserTokenType;
 import bssm.bsmauth.domain.user.type.UserRole;
 import bssm.bsmauth.global.exception.exceptions.BadRequestException;
 import bssm.bsmauth.global.exception.exceptions.ConflictException;
 import bssm.bsmauth.global.exception.exceptions.InternalServerException;
 import bssm.bsmauth.global.exception.exceptions.NotFoundException;
-import bssm.bsmauth.global.mail.MailService;
-import bssm.bsmauth.global.mail.dto.MailDto;
 import bssm.bsmauth.domain.user.dto.response.ResetPwTokenInfoDto;
-import bssm.bsmauth.domain.user.entities.ResetPwToken;
+import bssm.bsmauth.domain.user.entities.UserToken;
 import bssm.bsmauth.domain.user.entities.Student;
 import bssm.bsmauth.domain.user.entities.User;
-import bssm.bsmauth.domain.user.repositories.ResetPwTokenRepository;
+import bssm.bsmauth.domain.user.repositories.TokenRepository;
 import bssm.bsmauth.domain.user.repositories.StudentRepository;
 import bssm.bsmauth.domain.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HexFormat;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +42,9 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
-    private final MailService mailService;
-    private final ResetPwTokenRepository resetPwTokenRepository;
+    private final TokenRepository tokenRepository;
+    private final TeacherAuthCodeRepository teacherAuthCodeRepository;
+    private final UserMailService userMailService;
     @Value("${env.file.path.base}")
     private String PUBLIC_RESOURCE_PATH;
     @Value("${env.file.path.upload.profile}")
@@ -66,8 +68,7 @@ public class UserService {
     }
 
     @Transactional
-    public User studentSignUp(UserSignUpDto dto) throws Exception {
-
+    public void studentSignUp(UserSignUpDto dto) throws Exception {
         if (!dto.getPw().equals(dto.getCheckPw())) {
             throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
         }
@@ -85,7 +86,6 @@ public class UserService {
 
         studentInfo.setCodeAvailable(false);
 
-
         // 비밀번호 솔트 값 생성
         String salt = getRandomStr(64);
         // 비밀번호 암호화
@@ -100,7 +100,7 @@ public class UserService {
                 .role(UserRole.STUDENT)
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     public User login(UserLoginDto dto) throws Exception {
@@ -131,18 +131,18 @@ public class UserService {
     }
 
     public void resetPwByToken(UserResetPwByTokenDto dto) throws Exception {
-        ResetPwToken token = resetPwTokenRepository.findByToken(dto.getToken()).orElseThrow(
+        UserToken token = tokenRepository.findByTokenAndType(dto.getToken(), UserTokenType.RESET_PW).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
         if (token.isUsed() || new Date().after(token.getExpireIn())) throw new NotFoundException("토큰이 만료되었습니다");
 
         updatePw(token.getUser(), dto);
         token.setUsed(true);
-        resetPwTokenRepository.save(token);
+        tokenRepository.save(token);
     }
 
     public ResetPwTokenInfoDto getResetPwTokenInfo(String token) {
-        ResetPwToken tokenInfo = resetPwTokenRepository.findByToken(token).orElseThrow(
+        UserToken tokenInfo = tokenRepository.findByTokenAndType(token, UserTokenType.RESET_PW).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
         return ResetPwTokenInfoDto.builder()
@@ -194,7 +194,7 @@ public class UserService {
         }
     }
 
-    public void sendAuthCodeMail(FindStudentDto dto) {
+    public void studentAuthCodeMail(FindStudentDto dto) {
         Student student = studentRepository.findByEnrolledAtAndGradeAndClassNoAndStudentNoAndName(
                 dto.getEnrolledAt(),
                 dto.getGrade(),
@@ -205,41 +205,32 @@ public class UserService {
                 () -> {throw new NotFoundException("학생을 찾을 수 없습니다");}
         );
 
-        String content = "<!DOCTYPE HTML>\n" +
-                "    <html lang=\"kr\">\n" +
-                "    <head>\n" +
-                "        <meta charset=\"UTF-8\">\n" +
-                "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div style=\"display:flex;justify-content:center;\">\n" +
-                "            <div style=\"padding:25px 0;text-align:center;margin:0 auto;border:solid 5px;border-radius:25px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은고딕',helvetica,'Apple SD Gothic Neo',sans-serif;background-color:#202124; color:#e8eaed;\">\n" +
-                "                <img src=\"https://bssm.kro.kr/icons/logo.png\" alt=\"로고\" style=\"height:35px; padding-top:12px;\">\n" +
-                "                <h1 style=\"font-size:28px;margin-left:25px;margin-right:25px;\">BSM 회원가입 인증 코드입니다.</h1>\n" +
-                "                <h2 style=\"display:inline-block;font-size:20px;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">"+ student.getAuthCode() +"</h2>\n" +
-                "                <br><br><br>\n" +
-                "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
-                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
-                "                    <p style=\"margin:0;\">- 인증 코드는 한 사람당 한 개의 계정에만 쓸 수 있습니다</p>\n" +
-                "                </div><br>\n" +
-                "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
-                "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
-                "                    <p style=\"margin:0;\">Copyright 2022. BSM TEAM all rights reserved.</p>\n" +
-                "                </footer>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </body>\n" +
-                "    </html>";
-
-        MailDto mailDto = MailDto.builder()
-                        .to(student.getEmail())
-                        .subject("BSM 회원가입 인증 코드입니다")
-                        .content(content)
-                        .build();
-        mailService.sendMail(mailDto);
+        userMailService.sendAuthCodeMail(student.getEmail(), student.getAuthCode());
     }
 
-    public void sendFindIdMail(FindStudentDto dto) {
+    @Transactional
+    public void teacherAuthCodeMail(SendTeacherAuthCodeMailDto dto) {
+        if (!Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
+            throw new BadRequestException("올바른 주소가 아닙니다");
+        }
+        teacherAuthCodeRepository.deleteByEmail(dto.getEmail());
+
+        Date expireIn = new Date();
+        expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
+
+        TeacherAuthCode authCode = TeacherAuthCode.builder()
+                .token(getRandomStr(32))
+                .email(dto.getEmail())
+                .used(false)
+                .type(UserTokenType.AUTH_CODE)
+                .expireIn(expireIn)
+                .build();
+        teacherAuthCodeRepository.save(authCode);
+
+        userMailService.sendAuthCodeMail(dto.getEmail(), authCode.getToken());
+    }
+
+    public void studentFindIdMail(FindStudentDto dto) {
         Student student = studentRepository.findByEnrolledAtAndGradeAndClassNoAndStudentNoAndName(
                 dto.getEnrolledAt(),
                 dto.getGrade(),
@@ -249,44 +240,15 @@ public class UserService {
         ).orElseThrow(
                 () -> {throw new NotFoundException("학생을 찾을 수 없습니다");}
         );
+
         User user = userRepository.findByStudent(student).orElseThrow(
                 () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
         );
 
-        String content = "<!DOCTYPE HTML>\n" +
-                "    <html lang=\"kr\">\n" +
-                "    <head>\n" +
-                "        <meta charset=\"UTF-8\">\n" +
-                "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div style=\"display:flex;justify-content:center;\">\n" +
-                "            <div style=\"padding:25px 0;text-align:center;margin:0 auto;border:solid 5px;border-radius:25px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은고딕',helvetica,'Apple SD Gothic Neo',sans-serif;background-color:#202124; color:#e8eaed;\">\n" +
-                "                <img src=\"https://bssm.kro.kr/icons/logo.png\" alt=\"로고\" style=\"height:35px; padding-top:12px;\">\n" +
-                "                <h1 style=\"font-size:28px;margin-left:25px;margin-right:25px;\">BSM ID 복구 메일입니다</h1>\n" +
-                "                <h2 style=\"display:inline-block;font-size:20px;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">"+ user.getId() +"</h2>\n" +
-                "                <br><br><br>\n" +
-                "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
-                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
-                "                </div><br>\n" +
-                "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
-                "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
-                "                    <p style=\"margin:0;\">Copyright 2022. BSM TEAM all rights reserved.</p>\n" +
-                "                </footer>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </body>\n" +
-                "    </html>";
-
-        MailDto mailDto = MailDto.builder()
-                .to(student.getEmail())
-                .subject("BSM ID 복구 메일입니다")
-                .content(content)
-                .build();
-        mailService.sendMail(mailDto);
+        userMailService.sendFindIdMail(student.getEmail(), user.getId());
     }
 
-    public void sendResetPwMail(SendResetPwMailDto dto) {
+    public void resetPwMail(SendResetPwMailDto dto) {
         User user = userRepository.findById(dto.getId()).orElseThrow(
                 () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
         );
@@ -294,46 +256,17 @@ public class UserService {
         Date expireIn = new Date();
         expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
 
-        ResetPwToken token = ResetPwToken.builder()
+        UserToken token = UserToken.builder()
                 .token(getRandomStr(32))
                 .usercode(user.getCode())
                 .used(false)
+                .type(UserTokenType.RESET_PW)
                 .expireIn(expireIn)
                 .build();
 
-        String content = "<!DOCTYPE HTML>\n" +
-                "    <html lang=\"kr\">\n" +
-                "    <head>\n" +
-                "        <meta charset=\"UTF-8\">\n" +
-                "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div style=\"display:flex;justify-content:center;\">\n" +
-                "            <div style=\"padding:25px 0;text-align:center;margin:0 auto;border:solid 5px;border-radius:25px;font-family:-apple-system,BlinkMacSystemFont,'Malgun Gothic','맑은고딕',helvetica,'Apple SD Gothic Neo',sans-serif;background-color:#202124; color:#e8eaed;\">\n" +
-                "                <img src=\"https://bssm.kro.kr/icons/logo.png\" alt=\"로고\" style=\"height:35px; padding-top:12px;\">\n" +
-                "                <h1 style=\"font-size:28px;margin-left:25px;margin-right:25px;\">BSM 비밀번호 재설정 링크입니다</h1>\n" +
-                "                <a href=\"https://auth.bssm.kro.kr/resetPw?token=" + token + "\" style=\"display:inline-block;font-size:20px;text-decoration:none;font-weight:bold;text-align:center;margin:0;color:#e8eaed;padding:15px;border-radius:7px;box-shadow:20px 20px 50px rgba(0, 0, 0, 0.5);background-color:rgba(192, 192, 192, 0.2);\">비밀번호 재설정</a>\n" +
-                "                <br><br><br>\n" +
-                "                <div style=\"background-color:rgba(192, 192, 192, 0.2);padding:10px;text-align:left;font-size:14px;\">\n" +
-                "                    <p style=\"margin:0;\">- 본 이메일은 발신전용 이메일입니다</p>\n" +
-                "                    <p style=\"margin:0;\">- 해당 링크는 발송시점으로 부터 5분동안 유효합니다</p>\n" +
-                "                </div><br>\n" +
-                "                <footer style=\"padding:15px 0;bottom:0;width:100%;font-size:15px;text-align:center;font-weight:bold;\">\n" +
-                "                    <p style=\"margin:0;\">부산 소프트웨어 마이스터고 학교 지원 서비스</p>\n" +
-                "                    <p style=\"margin:0;\">Copyright 2022. BSM TEAM all rights reserved.</p>\n" +
-                "                </footer>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </body>\n" +
-                "    </html>";
-
-        MailDto mailDto = MailDto.builder()
-                .to(user.getStudent().getEmail())
-                .subject("BSM 비밀번호 재설정 링크입니다")
-                .content(content)
-                .build();
-        mailService.sendMail(mailDto);
-        resetPwTokenRepository.save(token);
+        String email = user.getRole() == UserRole.TEACHER? user.getTeacher().getEmail(): user.getStudent().getEmail();
+        userMailService.sendResetPwMail(email, token.getToken());
+        tokenRepository.save(token);
     }
 
     private String getRandomStr(int length) {
