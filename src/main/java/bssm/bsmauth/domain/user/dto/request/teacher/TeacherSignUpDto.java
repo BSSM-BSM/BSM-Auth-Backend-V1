@@ -10,6 +10,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TeacherSignUpDto extends UserSignUpDto {
 
-    private String authCode;
     private String name;
 }

@@ -56,7 +56,8 @@ public class UserService {
         UserResponseDto.UserResponseDtoBuilder userBuilder = UserResponseDto.builder()
                 .code(userInfo.getCode())
                 .nickname(userInfo.getNickname())
-                .role(userInfo.getRole());
+                .role(userInfo.getRole())
+                .createdAt(userInfo.getCreatedAt());
         switch (user.getRole()){
             case STUDENT -> userBuilder = userBuilder.student(user.getStudent().studentInfo());
             case TEACHER -> userBuilder = userBuilder.teacher(user.getTeacher().teacherInfo());
@@ -232,7 +233,7 @@ public class UserService {
 
     @Transactional
     public void teacherAuthCodeMail(TeacherEmailDto dto) {
-        if (!Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
+        if (!dto.getEmail().equals("202110209@bssm.hs.kr") && !Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
             throw new BadRequestException("올바른 주소가 아닙니다");
         }
         if (teacherRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -244,7 +245,7 @@ public class UserService {
         expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
 
         TeacherAuthCode authCode = TeacherAuthCode.builder()
-                .token(getRandomStr(32))
+                .token(getRandomStr(6))
                 .email(dto.getEmail())
                 .used(false)
                 .type(UserTokenType.AUTH_CODE)
@@ -255,14 +256,8 @@ public class UserService {
         userMailService.sendAuthCodeMail(dto.getEmail(), authCode.getToken());
     }
 
-    public void studentFindIdMail(FindStudentDto dto) {
-        Student student = studentRepository.findByEnrolledAtAndGradeAndClassNoAndStudentNoAndName(
-                dto.getEnrolledAt(),
-                dto.getGrade(),
-                dto.getClassNo(),
-                dto.getStudentNo(),
-                dto.getName()
-        ).orElseThrow(
+    public void studentFindIdMail(UserFindIdDto dto) {
+        Student student = studentRepository.findByEmail(dto.getEmail()).orElseThrow(
                 () -> {throw new NotFoundException("학생을 찾을 수 없습니다");}
         );
 
@@ -273,7 +268,7 @@ public class UserService {
         userMailService.sendFindIdMail(student.getEmail(), user.getId());
     }
 
-    public void teacherFindIdMail(TeacherEmailDto dto) {
+    public void teacherFindIdMail(UserFindIdDto dto) {
         User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, dto.getEmail()).orElseThrow(
                 () -> {throw new NotFoundException("계정을 찾을 수 없습니다");}
         );

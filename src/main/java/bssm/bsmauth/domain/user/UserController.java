@@ -119,12 +119,12 @@ public class UserController {
     }
 
     @PostMapping("mail/id/student")
-    public void sendFindIdMail(@RequestBody FindStudentDto dto) {
+    public void studentFindIdMail(@RequestBody UserFindIdDto dto) {
         userService.studentFindIdMail(dto);
     }
 
     @PostMapping("mail/id/teacher")
-    public void sendFindIdMail(@RequestBody TeacherEmailDto dto) {
+    public void teacherFindIdMail(@RequestBody UserFindIdDto dto) {
         userService.teacherFindIdMail(dto);
     }
 
