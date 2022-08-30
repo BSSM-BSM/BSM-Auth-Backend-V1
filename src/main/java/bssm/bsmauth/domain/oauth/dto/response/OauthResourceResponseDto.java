@@ -14,5 +14,4 @@ public class OauthResourceResponseDto {
 
     private OauthUserDto user;
     private List<String> scopeList;
-    private UserRole role;
 }

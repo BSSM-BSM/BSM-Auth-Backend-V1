@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.oauth.dto;
 
+import bssm.bsmauth.domain.user.type.UserRole;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,4 +18,5 @@ public class OauthUserDto {
     private Integer studentNo;
     private String name;
     private String email;
+    private UserRole role;
 }

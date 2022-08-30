@@ -174,8 +174,11 @@ public class OauthService {
 
         return OauthResourceResponseDto.builder()
                 .scopeList(scopeList)
-                .user(oauthUserDto.build())
-                .role(user.getRole())
+                .user(
+                        oauthUserDto
+                                .role(user.getRole())
+                                .build()
+                )
                 .build();
     }
 

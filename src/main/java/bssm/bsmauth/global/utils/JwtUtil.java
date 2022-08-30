@@ -106,6 +106,7 @@ public class JwtUtil {
                         .classNo(claims.get("classNo", Integer.class))
                         .studentNo(claims.get("studentNo", Integer.class))
                         .name(claims.get("name", String.class))
+                        .studentId(claims.get("studentId", String.class))
                         .build();
                 return userBuilder
                         .student(student)

@@ -1,4 +1,5 @@
 server:
+  port: ${env.server.port}
   servlet:
     contextPath: /api
 spring:
