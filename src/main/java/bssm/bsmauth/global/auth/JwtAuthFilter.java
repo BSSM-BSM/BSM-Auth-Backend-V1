@@ -47,6 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             Cookie refreshTokenCookie = cookieUtil.getCookie(req, REFRESH_TOKEN_COOKIE_NAME);
             // 엑세스 토큰 인증에 실패했으면서 리프레시 토큰도 없으면 인증 실패
             if (refreshTokenCookie == null) {
+                res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
                 filterChain.doFilter(req, res);
                 return;
             }
