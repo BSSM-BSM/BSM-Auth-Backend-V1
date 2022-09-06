@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FindStudentDto {
 
-    private int enrolledAt;
     private int grade;
     private int classNo;
     private int studentNo;

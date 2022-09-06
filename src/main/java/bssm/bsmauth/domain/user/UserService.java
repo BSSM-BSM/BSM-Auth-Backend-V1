@@ -218,8 +218,7 @@ public class UserService {
     }
 
     public void studentAuthCodeMail(FindStudentDto dto) {
-        Student student = studentRepository.findByEnrolledAtAndGradeAndClassNoAndStudentNoAndName(
-                dto.getEnrolledAt(),
+        Student student = studentRepository.findByGradeAndClassNoAndStudentNoAndName(
                 dto.getGrade(),
                 dto.getClassNo(),
                 dto.getStudentNo(),
@@ -256,8 +255,13 @@ public class UserService {
         userMailService.sendAuthCodeMail(dto.getEmail(), authCode.getToken());
     }
 
-    public void studentFindIdMail(UserFindIdDto dto) {
-        Student student = studentRepository.findByEmail(dto.getEmail()).orElseThrow(
+    public void studentFindIdMail(FindStudentDto dto) {
+        Student student = studentRepository.findByGradeAndClassNoAndStudentNoAndName(
+                dto.getGrade(),
+                dto.getClassNo(),
+                dto.getStudentNo(),
+                dto.getName()
+        ).orElseThrow(
                 () -> {throw new NotFoundException("학생을 찾을 수 없습니다");}
         );
 
@@ -268,7 +272,7 @@ public class UserService {
         userMailService.sendFindIdMail(student.getEmail(), user.getId());
     }
 
-    public void teacherFindIdMail(UserFindIdDto dto) {
+    public void teacherFindIdMail(TeacherEmailDto dto) {
         User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, dto.getEmail()).orElseThrow(
                 () -> {throw new NotFoundException("계정을 찾을 수 없습니다");}
         );
