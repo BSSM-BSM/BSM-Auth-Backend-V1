@@ -48,6 +48,8 @@ public class OauthService {
         if (oauthTokenRepository.findByUsercodeAndClientId(user.getCode(), clientId).isPresent()) {
             return OauthAuthenticationResponseDto.builder()
                     .authorized(true)
+                    .domain(client.getDomain())
+                    .serviceName(client.getServiceName())
                     .build();
         }
 
