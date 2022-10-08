@@ -2,10 +2,10 @@ package bssm.bsmauth.domain.oauth;
 
 import bssm.bsmauth.domain.oauth.dto.response.*;
 import bssm.bsmauth.global.utils.UserUtil;
-import bssm.bsmauth.domain.oauth.dto.request.CreateOauthClientDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthAuthorizationDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthGetResourceDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthGetTokenDto;
+import bssm.bsmauth.domain.oauth.dto.request.CreateOauthClientRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthAuthorizationRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthGetResourceRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthGetTokenRequest;
 import bssm.bsmauth.domain.oauth.entities.OauthScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,22 +29,22 @@ public class OauthController {
     }
 
     @PostMapping("authorize")
-    public OauthAuthorizationResponseDto authorization(@RequestBody OauthAuthorizationDto dto) {
+    public OauthAuthorizationResponseDto authorization(@RequestBody OauthAuthorizationRequest dto) {
         return oauthService.authorization(userUtil.getCurrentUser(), dto);
     }
 
     @PostMapping("token")
-    public OauthTokenResponseDto getToken(@RequestBody OauthGetTokenDto dto) {
+    public OauthTokenResponseDto getToken(@RequestBody OauthGetTokenRequest dto) {
         return oauthService.getToken(dto);
     }
 
     @PostMapping("resource")
-    public OauthResourceResponseDto getResource(@RequestBody OauthGetResourceDto dto) {
+    public OauthResourceResponseDto getResource(@RequestBody OauthGetResourceRequest dto) {
         return oauthService.getResource(dto);
     }
 
     @PostMapping("client")
-    public void createClient(@RequestBody CreateOauthClientDto dto) {
+    public void createClient(@RequestBody CreateOauthClientRequest dto) {
         oauthService.createClient(userUtil.getCurrentUser(), dto);
     }
 

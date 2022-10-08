@@ -1,13 +1,14 @@
 package bssm.bsmauth.domain.user.dto.request.teacher;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.Email;
 
 @Getter
-@AllArgsConstructor
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class TeacherEmailDto {
 
+    @Email
     private String email;
 }

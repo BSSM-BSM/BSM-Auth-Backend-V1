@@ -9,10 +9,10 @@ import bssm.bsmauth.global.exception.exceptions.ForbiddenException;
 import bssm.bsmauth.global.exception.exceptions.InternalServerException;
 import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.dto.OauthUserDto;
-import bssm.bsmauth.domain.oauth.dto.request.CreateOauthClientDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthAuthorizationDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthGetResourceDto;
-import bssm.bsmauth.domain.oauth.dto.request.OauthGetTokenDto;
+import bssm.bsmauth.domain.oauth.dto.request.CreateOauthClientRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthAuthorizationRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthGetResourceRequest;
+import bssm.bsmauth.domain.oauth.dto.request.OauthGetTokenRequest;
 import bssm.bsmauth.domain.oauth.repositories.OauthAuthCodeRepository;
 import bssm.bsmauth.domain.oauth.repositories.OauthClientRepository;
 import bssm.bsmauth.domain.oauth.repositories.OauthClientScopeRepository;
@@ -22,7 +22,9 @@ import bssm.bsmauth.domain.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -31,6 +33,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class OauthService {
 
@@ -66,7 +69,7 @@ public class OauthService {
                 .build();
     }
 
-    public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationDto dto) {
+    public OauthAuthorizationResponseDto authorization(User user, @Valid OauthAuthorizationRequest dto) {
         OauthClient client = checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
@@ -98,7 +101,7 @@ public class OauthService {
         return client;
     }
 
-    public OauthTokenResponseDto getToken(OauthGetTokenDto dto) {
+    public OauthTokenResponseDto getToken(@Valid OauthGetTokenRequest dto) {
         OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(dto.getAuthCode(), false).orElseThrow(
                 () -> {throw new NotFoundException("인증 코드를 찾을 수 없습니다");}
         );
@@ -129,7 +132,7 @@ public class OauthService {
                 .build();
     }
 
-    public OauthResourceResponseDto getResource(OauthGetResourceDto dto) {
+    public OauthResourceResponseDto getResource(@Valid OauthGetResourceRequest dto) {
         OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
@@ -184,8 +187,7 @@ public class OauthService {
                 .build();
     }
 
-    public void createClient(User user, CreateOauthClientDto dto) {
-        if (!domainCheck(dto.getDomain())) throw new BadRequestException("도메인이 잘못되었습니다");
+    public void createClient(User user, @Valid CreateOauthClientRequest dto) {
         if (!uriCheck(dto.getDomain(), dto.getRedirectURI())) throw new BadRequestException("리다이렉트 주소가 잘못되었습니다");
 
         OauthClient client = OauthClient.builder()
@@ -259,12 +261,6 @@ public class OauthService {
         byte[] randomBytes = new byte[length / 2];
         secureRandom.nextBytes(randomBytes);
         return HexFormat.of().formatHex(randomBytes);
-    }
-
-
-    private boolean domainCheck(String str) {
-        if (str.equals("localhost")) return true;
-        return Pattern.matches("^([0-9]{1,3}.){3}[0-9]{1,3}|([0-9a-zA-Z\\-]+\\.)+[a-zA-Z]{2,6}?$", str);
     }
 
     private boolean uriCheck (String domain, String uri) {

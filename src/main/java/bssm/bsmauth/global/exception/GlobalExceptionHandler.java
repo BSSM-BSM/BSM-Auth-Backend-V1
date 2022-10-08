@@ -1,9 +1,12 @@
 package bssm.bsmauth.global.exception;
 
+import bssm.bsmauth.global.exception.exceptions.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -12,6 +15,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<HttpErrorResponse> handleException(HttpError exception) {
         HttpErrorResponse httpErrorResponse = new HttpErrorResponse(exception);
         return new ResponseEntity<>(httpErrorResponse, HttpStatus.valueOf(exception.getStatusCode()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<HttpErrorResponse> handleException(ConstraintViolationException exception) {
+        HttpErrorResponse httpErrorResponse = new HttpErrorResponse(new BadRequestException(exception.getMessage()));
+        return new ResponseEntity<>(httpErrorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)

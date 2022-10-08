@@ -1,13 +1,11 @@
 package bssm.bsmauth.domain.user.dto.request.student;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
-@RequiredArgsConstructor
-public class FindStudentDto {
+@NoArgsConstructor
+public class FindStudentRequest {
 
     private int grade;
     private int classNo;

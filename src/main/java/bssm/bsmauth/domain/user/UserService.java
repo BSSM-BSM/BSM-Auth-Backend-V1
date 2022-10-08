@@ -1,9 +1,9 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
-import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
+import bssm.bsmauth.domain.user.dto.request.student.FindStudentRequest;
 import bssm.bsmauth.domain.user.dto.request.teacher.TeacherEmailDto;
-import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpRequest;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.entities.*;
 import bssm.bsmauth.domain.user.repositories.*;
@@ -18,9 +18,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.validation.Valid;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -34,6 +36,7 @@ import java.util.HexFormat;
 import java.util.regex.Pattern;
 
 @Service
+@Validated
 @RequiredArgsConstructor
 public class UserService {
 
@@ -68,7 +71,7 @@ public class UserService {
     }
 
     @Transactional
-    public void studentSignUp(UserSignUpDto dto) throws Exception {
+    public void studentSignUp(@Valid UserSignUpRequest dto) throws Exception {
         Student studentInfo = studentRepository.findByAuthCode(dto.getAuthCode())
                 .orElseThrow(() -> {throw new NotFoundException("인증코드를 찾을 수 없습니다");});
         if (!studentInfo.isCodeAvailable()) {
@@ -84,7 +87,7 @@ public class UserService {
     }
 
     @Transactional
-    public void teacherSignUp(TeacherSignUpDto dto) throws Exception {
+    public void teacherSignUp(@Valid TeacherSignUpRequest dto) throws Exception {
         TeacherAuthCode teacherAuthCode = teacherAuthCodeRepository.findByTokenAndType(dto.getAuthCode(), UserTokenType.AUTH_CODE)
                 .orElseThrow(() -> {throw new NotFoundException("인증코드를 찾을 수 없습니다");});
         if (teacherAuthCode.isUsed()) {
@@ -105,7 +108,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private User.UserBuilder signUp(UserSignUpDto dto) throws Exception {
+    private User.UserBuilder signUp(@Valid UserSignUpRequest dto) throws Exception {
         if (!dto.getPw().equals(dto.getCheckPw())) {
             throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
         }
@@ -126,7 +129,7 @@ public class UserService {
                 .nickname(dto.getNickname());
     }
 
-    public User login(UserLoginDto dto) throws Exception {
+    public User login(@Valid LoginRequest dto) throws Exception {
         User user = userRepository.findById(dto.getId())
                 .orElseThrow(() -> {throw new BadRequestException("id 또는 password가 맞지 않습니다");});
         if (!user.getPw().equals(encryptPw(user.getPwSalt(), dto.getPw()))) {
@@ -135,7 +138,7 @@ public class UserService {
         return user;
     }
 
-    public void updatePw(User user, UserUpdatePwDto dto) throws Exception {
+    public void updatePw(User user, @Valid UpdatePwRequest dto) throws Exception {
         if (!dto.getNewPw().equals(dto.getCheckNewPw())) {
             throw new BadRequestException("비밀번호 재입력이 맞지 않습니다");
         }
@@ -153,7 +156,7 @@ public class UserService {
         userRepository.save(newUser);
     }
 
-    public void resetPwByToken(UserResetPwByTokenDto dto) throws Exception {
+    public void resetPwByToken(@Valid ResetPwByTokenRequest dto) throws Exception {
         UserToken token = tokenRepository.findByTokenAndType(dto.getToken(), UserTokenType.RESET_PW).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
@@ -174,7 +177,7 @@ public class UserService {
                 .build();
     }
 
-    public User updateNickname(User user, UserUpdateNicknameDto dto) {
+    public User updateNickname(User user, @Valid UpdateNicknameRequest dto) {
         userRepository.findByNickname(dto.getNewNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
         User newUser = userRepository.findById(user.getCode()).orElseThrow(
@@ -217,7 +220,7 @@ public class UserService {
         }
     }
 
-    public void studentAuthCodeMail(FindStudentDto dto) {
+    public void studentAuthCodeMail(@Valid FindStudentRequest dto) {
         Student student = studentRepository.findByGradeAndClassNoAndStudentNoAndName(
                 dto.getGrade(),
                 dto.getClassNo(),
@@ -231,8 +234,8 @@ public class UserService {
     }
 
     @Transactional
-    public void teacherAuthCodeMail(TeacherEmailDto dto) {
-        if (!dto.getEmail().equals("202110209@bssm.hs.kr") && !Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
+    public void teacherAuthCodeMail(@Valid TeacherEmailDto dto) {
+        if (!Pattern.matches("teacher\\d.*@bssm\\.hs\\.kr", dto.getEmail())) {
             throw new BadRequestException("올바른 주소가 아닙니다");
         }
         if (teacherRepository.findByEmail(dto.getEmail()).isPresent()) {
@@ -255,7 +258,7 @@ public class UserService {
         userMailService.sendAuthCodeMail(dto.getEmail(), authCode.getToken());
     }
 
-    public void studentFindIdMail(FindStudentDto dto) {
+    public void studentFindIdMail(@Valid FindStudentRequest dto) {
         Student student = studentRepository.findByGradeAndClassNoAndStudentNoAndName(
                 dto.getGrade(),
                 dto.getClassNo(),
@@ -272,7 +275,7 @@ public class UserService {
         userMailService.sendFindIdMail(student.getEmail(), user.getId());
     }
 
-    public void teacherFindIdMail(TeacherEmailDto dto) {
+    public void teacherFindIdMail(@Valid TeacherEmailDto dto) {
         User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, dto.getEmail()).orElseThrow(
                 () -> {throw new NotFoundException("계정을 찾을 수 없습니다");}
         );
@@ -280,7 +283,7 @@ public class UserService {
         userMailService.sendFindIdMail(user.getTeacher().getEmail(), user.getId());
     }
 
-    public void resetPwMail(SendResetPwMailDto dto) {
+    public void resetPwMail(@Valid SendResetPwMailRequest dto) {
         User user = userRepository.findById(dto.getId()).orElseThrow(
                 () -> {throw new NotFoundException("없는 유저입니다, 먼저 회원가입을 해주세요");}
         );

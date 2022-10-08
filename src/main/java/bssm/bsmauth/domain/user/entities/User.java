@@ -19,10 +19,10 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 20, unique = true)
     private String id;
 
-    @Column(nullable = false, length = 40, unique = true)
+    @Column(nullable = false, length = 20, unique = true)
     private String nickname;
 
-    @Column(length = 12)
+    @Column(nullable = false, length = 12)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 

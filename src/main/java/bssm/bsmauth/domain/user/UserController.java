@@ -1,9 +1,9 @@
 package bssm.bsmauth.domain.user;
 
 import bssm.bsmauth.domain.user.dto.request.*;
-import bssm.bsmauth.domain.user.dto.request.student.FindStudentDto;
+import bssm.bsmauth.domain.user.dto.request.student.FindStudentRequest;
 import bssm.bsmauth.domain.user.dto.request.teacher.TeacherEmailDto;
-import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpDto;
+import bssm.bsmauth.domain.user.dto.request.teacher.TeacherSignUpRequest;
 import bssm.bsmauth.domain.user.dto.response.UserLoginResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.dto.response.UserUpdateNicknameResponseDto;
@@ -51,17 +51,17 @@ public class UserController {
     }
 
     @PostMapping("student")
-    public void studentSignUp(@RequestBody UserSignUpDto dto) throws Exception {
+    public void studentSignUp(@RequestBody UserSignUpRequest dto) throws Exception {
         userService.studentSignUp(dto);
     }
 
     @PostMapping("teacher")
-    public void teacherSignUp(@RequestBody TeacherSignUpDto dto) throws Exception {
+    public void teacherSignUp(@RequestBody TeacherSignUpRequest dto) throws Exception {
         userService.teacherSignUp(dto);
     }
 
     @PostMapping("login")
-    public UserLoginResponseDto login(@RequestBody UserLoginDto dto, HttpServletResponse res) throws Exception {
+    public UserLoginResponseDto login(@RequestBody LoginRequest dto, HttpServletResponse res) throws Exception {
         User user = userService.login(dto);
 
         String token = jwtUtil.createAccessToken(user);
@@ -78,12 +78,12 @@ public class UserController {
     }
 
     @PutMapping("pw")
-    public void updatePw(@RequestBody UserUpdatePwDto dto) throws Exception {
+    public void updatePw(@RequestBody UpdatePwRequest dto) throws Exception {
         userService.updatePw(userUtil.getCurrentUser(), dto);
     }
 
     @PostMapping("pw/token")
-    public void resetPwByToken(@RequestBody UserResetPwByTokenDto dto) throws Exception {
+    public void resetPwByToken(@RequestBody ResetPwByTokenRequest dto) throws Exception {
         userService.resetPwByToken(dto);
     }
 
@@ -93,7 +93,7 @@ public class UserController {
     }
 
     @PutMapping("nickname")
-    public UserUpdateNicknameResponseDto updateNickname(@RequestBody UserUpdateNicknameDto dto, HttpServletResponse res) throws Exception {
+    public UserUpdateNicknameResponseDto updateNickname(@RequestBody UpdateNicknameRequest dto, HttpServletResponse res) throws Exception {
         User user = userService.updateNickname(userUtil.getCurrentUser(), dto);
 
         String token = jwtUtil.createAccessToken(user);
@@ -109,7 +109,7 @@ public class UserController {
     }
 
     @PostMapping("mail/authcode/student")
-    public void sendAuthCodeMail(@RequestBody FindStudentDto dto) {
+    public void sendAuthCodeMail(@RequestBody FindStudentRequest dto) {
         userService.studentAuthCodeMail(dto);
     }
 
@@ -119,7 +119,7 @@ public class UserController {
     }
 
     @PostMapping("mail/id/student")
-    public void studentFindIdMail(@RequestBody FindStudentDto dto) {
+    public void studentFindIdMail(@RequestBody FindStudentRequest dto) {
         userService.studentFindIdMail(dto);
     }
 
@@ -129,7 +129,7 @@ public class UserController {
     }
 
     @PostMapping("mail/pw")
-    public void sendResetPwMail(@RequestBody SendResetPwMailDto dto) {
+    public void sendResetPwMail(@RequestBody SendResetPwMailRequest dto) {
         userService.resetPwMail(dto);
     }
 }
