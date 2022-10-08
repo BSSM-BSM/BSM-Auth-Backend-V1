@@ -1,17 +1,13 @@
 package bssm.bsmauth.global.exception.exceptions;
 
-import bssm.bsmauth.global.exception.HttpError;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+
+import java.util.Map;
 
 @Getter
-@NoArgsConstructor
-public class BadRequestException extends HttpError {
+@AllArgsConstructor
+public class BadRequestException extends RuntimeException {
 
-    private final int statusCode = 400;
-    private String message = "Bad Request";
-
-    public BadRequestException(String message) {
-        this.message = message;
-    }
+    private final Map<String, String> fields;
 }

@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("user")
@@ -51,17 +52,17 @@ public class UserController {
     }
 
     @PostMapping("student")
-    public void studentSignUp(@RequestBody UserSignUpRequest dto) throws Exception {
+    public void studentSignUp(@Valid @RequestBody UserSignUpRequest dto) throws Exception {
         userService.studentSignUp(dto);
     }
 
     @PostMapping("teacher")
-    public void teacherSignUp(@RequestBody TeacherSignUpRequest dto) throws Exception {
+    public void teacherSignUp(@Valid @RequestBody TeacherSignUpRequest dto) throws Exception {
         userService.teacherSignUp(dto);
     }
 
     @PostMapping("login")
-    public UserLoginResponseDto login(@RequestBody LoginRequest dto, HttpServletResponse res) throws Exception {
+    public UserLoginResponseDto login(@Valid @RequestBody LoginRequest dto, HttpServletResponse res) throws Exception {
         User user = userService.login(dto);
 
         String token = jwtUtil.createAccessToken(user);
@@ -78,22 +79,22 @@ public class UserController {
     }
 
     @PutMapping("pw")
-    public void updatePw(@RequestBody UpdatePwRequest dto) throws Exception {
+    public void updatePw(@Valid @RequestBody UpdatePwRequest dto) throws Exception {
         userService.updatePw(userUtil.getCurrentUser(), dto);
     }
 
     @PostMapping("pw/token")
-    public void resetPwByToken(@RequestBody ResetPwByTokenRequest dto) throws Exception {
+    public void resetPwByToken(@Valid @RequestBody ResetPwByTokenRequest dto) throws Exception {
         userService.resetPwByToken(dto);
     }
 
     @GetMapping("pw/token")
-    public ResetPwTokenInfoDto getResetPwTokenInfo(@RequestParam String token) throws Exception {
+    public ResetPwTokenInfoDto getResetPwTokenInfo(@Valid @RequestParam String token) throws Exception {
         return userService.getResetPwTokenInfo(token);
     }
 
     @PutMapping("nickname")
-    public UserUpdateNicknameResponseDto updateNickname(@RequestBody UpdateNicknameRequest dto, HttpServletResponse res) throws Exception {
+    public UserUpdateNicknameResponseDto updateNickname(@Valid @RequestBody UpdateNicknameRequest dto, HttpServletResponse res) throws Exception {
         User user = userService.updateNickname(userUtil.getCurrentUser(), dto);
 
         String token = jwtUtil.createAccessToken(user);
@@ -109,27 +110,27 @@ public class UserController {
     }
 
     @PostMapping("mail/authcode/student")
-    public void sendAuthCodeMail(@RequestBody FindStudentRequest dto) {
+    public void sendAuthCodeMail(@Valid @RequestBody FindStudentRequest dto) {
         userService.studentAuthCodeMail(dto);
     }
 
     @PostMapping("mail/authcode/teacher")
-    public void sendAuthCodeMail(@RequestBody TeacherEmailDto dto) {
+    public void sendAuthCodeMail(@Valid @RequestBody TeacherEmailDto dto) {
         userService.teacherAuthCodeMail(dto);
     }
 
     @PostMapping("mail/id/student")
-    public void studentFindIdMail(@RequestBody FindStudentRequest dto) {
+    public void studentFindIdMail(@Valid @RequestBody FindStudentRequest dto) {
         userService.studentFindIdMail(dto);
     }
 
     @PostMapping("mail/id/teacher")
-    public void teacherFindIdMail(@RequestBody TeacherEmailDto dto) {
+    public void teacherFindIdMail(@Valid @RequestBody TeacherEmailDto dto) {
         userService.teacherFindIdMail(dto);
     }
 
     @PostMapping("mail/pw")
-    public void sendResetPwMail(@RequestBody SendResetPwMailRequest dto) {
+    public void sendResetPwMail(@Valid @RequestBody SendResetPwMailRequest dto) {
         userService.resetPwMail(dto);
     }
 }

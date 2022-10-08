@@ -19,12 +19,11 @@ import bssm.bsmauth.domain.oauth.repositories.OauthClientScopeRepository;
 import bssm.bsmauth.domain.oauth.repositories.OauthTokenRepository;
 import bssm.bsmauth.domain.user.entities.User;
 import bssm.bsmauth.domain.user.repositories.UserRepository;
+import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
-import javax.validation.Valid;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -33,7 +32,6 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
-@Validated
 @RequiredArgsConstructor
 public class OauthService {
 
@@ -69,7 +67,7 @@ public class OauthService {
                 .build();
     }
 
-    public OauthAuthorizationResponseDto authorization(User user, @Valid OauthAuthorizationRequest dto) {
+    public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationRequest dto) {
         OauthClient client = checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
@@ -85,10 +83,17 @@ public class OauthService {
     }
 
     private OauthClient checkClient(User user, String clientId, String redirectURI) {
-        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
-                () -> {throw new BadRequestException("Oauth Authentication Failed");}
-        );
-        if (!client.getRedirectURI().equals(redirectURI)) throw new BadRequestException("Oauth Authentication Failed");
+        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(() -> {
+            throw new BadRequestException(ImmutableMap.<String, String>builder().
+                    put("clientId", "클라이언트를 찾을 수 없습니다").
+                    build()
+            );
+        });
+        if (!client.getRedirectURI().equals(redirectURI))
+            throw new BadRequestException(ImmutableMap.<String, String>builder().
+                    put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
+                    build()
+            );
         if (client.getAccess() != OauthAccessType.ALL && client.getAccess() != OauthAccessType.valueOf(user.getRole().name())) {
             String msg;
             switch (client.getAccess()) {
@@ -101,13 +106,16 @@ public class OauthService {
         return client;
     }
 
-    public OauthTokenResponseDto getToken(@Valid OauthGetTokenRequest dto) {
+    public OauthTokenResponseDto getToken(OauthGetTokenRequest dto) {
         OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(dto.getAuthCode(), false).orElseThrow(
                 () -> {throw new NotFoundException("인증 코드를 찾을 수 없습니다");}
         );
         OauthClient client = authCode.getOauthClient();
         if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
-            throw new BadRequestException("클라이언트 정보가 잘못되었습니다");
+            throw new BadRequestException(ImmutableMap.<String, String>builder().
+                    put("client", "클라이언트 정보가 잘못되었습니다").
+                    build()
+            );
         }
 
         authCode.setExpire(true);
@@ -132,13 +140,16 @@ public class OauthService {
                 .build();
     }
 
-    public OauthResourceResponseDto getResource(@Valid OauthGetResourceRequest dto) {
+    public OauthResourceResponseDto getResource(OauthGetResourceRequest dto) {
         OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
         OauthClient client = token.getOauthClient();
         if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
-            throw new BadRequestException("클라이언트 정보가 잘못되었습니다");
+            throw new BadRequestException(ImmutableMap.<String, String>builder().
+                    put("client", "클라이언트 정보가 잘못되었습니다").
+                    build()
+            );
         }
 
         User user = userRepository.findById(token.getUsercode()).orElseThrow(
@@ -187,8 +198,12 @@ public class OauthService {
                 .build();
     }
 
-    public void createClient(User user, @Valid CreateOauthClientRequest dto) {
-        if (!uriCheck(dto.getDomain(), dto.getRedirectURI())) throw new BadRequestException("리다이렉트 주소가 잘못되었습니다");
+    public void createClient(User user, CreateOauthClientRequest dto) {
+        if (!uriCheck(dto.getDomain(), dto.getRedirectURI()))
+            throw new BadRequestException(ImmutableMap.<String, String>builder().
+                    put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
+                    build()
+            );
 
         OauthClient client = OauthClient.builder()
                 .id(getRandomStr(8))
@@ -250,7 +265,7 @@ public class OauthService {
                 () -> {throw new NotFoundException("클라이언트를 찾을 수 없습니다");}
         );
         if (!client.getUsercode().equals(user.getCode())) {
-            throw new BadRequestException("권한이 없습니다");
+            throw new ForbiddenException("권한이 없습니다");
         }
 
         oauthClientRepository.deleteById(clientId);

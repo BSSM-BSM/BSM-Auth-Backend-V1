@@ -10,6 +10,7 @@ import bssm.bsmauth.domain.oauth.entities.OauthScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -29,22 +30,22 @@ public class OauthController {
     }
 
     @PostMapping("authorize")
-    public OauthAuthorizationResponseDto authorization(@RequestBody OauthAuthorizationRequest dto) {
+    public OauthAuthorizationResponseDto authorization(@Valid @RequestBody OauthAuthorizationRequest dto) {
         return oauthService.authorization(userUtil.getCurrentUser(), dto);
     }
 
     @PostMapping("token")
-    public OauthTokenResponseDto getToken(@RequestBody OauthGetTokenRequest dto) {
+    public OauthTokenResponseDto getToken(@Valid @RequestBody OauthGetTokenRequest dto) {
         return oauthService.getToken(dto);
     }
 
     @PostMapping("resource")
-    public OauthResourceResponseDto getResource(@RequestBody OauthGetResourceRequest dto) {
+    public OauthResourceResponseDto getResource(@Valid @RequestBody OauthGetResourceRequest dto) {
         return oauthService.getResource(dto);
     }
 
     @PostMapping("client")
-    public void createClient(@RequestBody CreateOauthClientRequest dto) {
+    public void createClient(@Valid @RequestBody CreateOauthClientRequest dto) {
         oauthService.createClient(userUtil.getCurrentUser(), dto);
     }
 
