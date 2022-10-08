@@ -11,6 +11,10 @@ import javax.validation.constraints.Size;
 public class UpdateNicknameRequest {
 
     @NotBlank
-    @Size(min = 1, max = 20)
+    @Size(
+            min = 1,
+            max = 20,
+            message = "닉네임은 1 ~ 20글자여야 합니다"
+    )
     private String newNickname;
 }

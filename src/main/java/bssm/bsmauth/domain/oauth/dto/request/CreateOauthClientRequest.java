@@ -21,14 +21,25 @@ public class CreateOauthClientRequest {
     private String domain;
 
     @NotBlank
-    @Size(min = 2, max = 32)
+    @Size(
+            min = 2,
+            max = 32,
+            message = "서비스 이름은 2 ~ 32글자여야 합니다"
+    )
     private String serviceName;
 
     @NotBlank
-    @Size(min = 1, max = 100)
+    @Size(
+            min = 1,
+            max = 100,
+            message = "는 1 ~ 100글자여야 합니다"
+    )
     private String redirectURI;
 
-    @Size(min = 1)
+    @Size(
+            min = 1,
+            message = "사용할 정보는 1개 이상이어야 합니다"
+    )
     private String[] scopeList;
 
     @NotNull

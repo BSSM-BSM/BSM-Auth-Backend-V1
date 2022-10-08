@@ -11,10 +11,18 @@ import javax.validation.constraints.Size;
 public class UpdatePwRequest {
 
     @NotBlank
-    @Size(min = 8, max = 24)
+    @Size(
+            min = 8,
+            max = 24,
+            message = "비밀번호는 8 ~ 24글자여야 합니다"
+    )
     private String newPw;
 
     @NotBlank
-    @Size(min = 8, max = 24)
+    @Size(
+            min = 8,
+            max = 24,
+            message = "비밀번호는 8 ~ 24글자여야 합니다"
+    )
     private String checkNewPw;
 }

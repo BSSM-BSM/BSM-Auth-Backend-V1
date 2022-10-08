@@ -11,6 +11,10 @@ import javax.validation.constraints.Size;
 public class OauthGetTokenRequest extends OauthClientRequest {
 
     @NotBlank
-    @Size(min = 32, max = 32)
+    @Size(
+            min = 32,
+            max = 32,
+            message = "인증코드는 32글자여야 합니다"
+    )
     private String authCode;
 }

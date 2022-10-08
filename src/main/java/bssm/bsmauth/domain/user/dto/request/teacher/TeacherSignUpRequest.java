@@ -12,6 +12,10 @@ import javax.validation.constraints.Size;
 public class TeacherSignUpRequest extends UserSignUpRequest {
 
     @NotBlank
-    @Size(min = 1, max = 8)
+    @Size(
+            min = 1,
+            max = 8,
+            message = "이름은 1 ~ 8글자여야 합니다"
+    )
     private String name;
 }
