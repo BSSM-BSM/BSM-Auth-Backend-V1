@@ -35,12 +35,12 @@ public class OauthController {
     }
 
     @PostMapping("token")
-    public OauthTokenResponseDto getToken(@Valid @RequestBody OauthGetTokenRequest dto) {
+    public OauthTokenResponseDto getToken(@RequestBody OauthGetTokenRequest dto) {
         return oauthService.getToken(dto);
     }
 
     @PostMapping("resource")
-    public OauthResourceResponseDto getResource(@Valid @RequestBody OauthGetResourceRequest dto) {
+    public OauthResourceResponseDto getResource(@RequestBody OauthGetResourceRequest dto) {
         return oauthService.getResource(dto);
     }
 

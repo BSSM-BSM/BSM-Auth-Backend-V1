@@ -20,9 +20,9 @@ public class LoginRequest {
 
     @NotBlank
     @Size(
-            min = 8,
+            min = 6,
             max = 24,
-            message = "비밀번호는 8 ~ 24글자여야 합니다"
+            message = "비밀번호는 6 ~ 24글자여야 합니다"
     )
     private String pw;
 }

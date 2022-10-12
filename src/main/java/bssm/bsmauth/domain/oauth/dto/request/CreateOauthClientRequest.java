@@ -15,7 +15,7 @@ public class CreateOauthClientRequest {
 
     @Size(min = 1, max = 63)
     @Pattern(
-            regexp = "^([0-9]{1,3}.){3}[0-9]{1,3}|([0-9a-zA-Z\\-]+\\.)+[a-zA-Z]{2,6}?$",
+            regexp = "^([0-9]{1,3}.){3}[0-9]{1,3}|([0-9a-zA-Z\\-]+\\.)+[a-zA-Z]{2,6}?$|^localhost$",
             message = "도메인이 잘못되었습니다"
     )
     private String domain;
