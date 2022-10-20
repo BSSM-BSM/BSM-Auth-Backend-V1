@@ -1,11 +1,11 @@
 package bssm.bsmauth.global.utils;
 
-import bssm.bsmauth.domain.user.entities.Teacher;
-import bssm.bsmauth.domain.user.type.UserRole;
+import bssm.bsmauth.domain.user.domain.Teacher;
+import bssm.bsmauth.domain.user.domain.UserRole;
 import bssm.bsmauth.global.auth.RefreshToken;
-import bssm.bsmauth.domain.user.entities.Student;
-import bssm.bsmauth.domain.user.entities.User;
-import bssm.bsmauth.domain.user.repositories.RefreshTokenRepository;
+import bssm.bsmauth.domain.user.domain.Student;
+import bssm.bsmauth.domain.user.domain.User;
+import bssm.bsmauth.domain.user.domain.repositories.RefreshTokenRepository;
 import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

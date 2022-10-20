@@ -1,7 +1,8 @@
 package bssm.bsmauth.global.utils;
 
-import bssm.bsmauth.global.auth.UserInfo;
-import bssm.bsmauth.domain.user.entities.User;
+import bssm.bsmauth.domain.user.domain.repositories.UserRepository;
+import bssm.bsmauth.domain.user.domain.User;
+import bssm.bsmauth.global.exception.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -10,8 +11,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserUtil {
 
-    public User getCurrentUser() {
-        UserInfo userInfo = (UserInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userInfo.getUser();
+    private final UserRepository userRepository;
+
+    public User getUser() {
+        String id = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findById(id)
+                .orElseThrow(NotFoundException::new);
     }
+
 }

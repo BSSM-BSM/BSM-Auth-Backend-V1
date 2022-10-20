@@ -1,6 +1,6 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.domain.user.entities.User;
+import bssm.bsmauth.domain.user.domain.User;
 import lombok.*;
 
 import javax.persistence.*;
