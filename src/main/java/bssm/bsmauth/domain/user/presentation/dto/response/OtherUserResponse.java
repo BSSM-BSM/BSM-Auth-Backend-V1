@@ -12,11 +12,10 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserInfoResponse {
+public class OtherUserResponse {
 
     private Long code;
     private String nickname;
-    private String email;
     private LocalDateTime createdAt;
     private UserRole role;
     private StudentInfoResponse student;

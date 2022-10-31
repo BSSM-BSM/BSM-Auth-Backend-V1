@@ -39,8 +39,13 @@ public class UserController {
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     @GetMapping()
-    public UserInfoResponse getUserInfo() {
-        return userUtil.getUser().toUserInfoResponse();
+    public UserResponse getUserInfo() {
+        return userUtil.getUser().toUserResponse();
+    }
+
+    @GetMapping("{userCode}")
+    public OtherUserResponse getOtherUserInfo(@PathVariable long userCode) {
+        return userService.getOtherUserInfo(userCode);
     }
 
     @DeleteMapping("logout")

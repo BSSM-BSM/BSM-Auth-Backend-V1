@@ -6,6 +6,7 @@ import bssm.bsmauth.domain.user.presentation.dto.request.*;
 import bssm.bsmauth.domain.user.presentation.dto.request.student.FindStudentRequest;
 import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherEmailDto;
 import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherSignUpRequest;
+import bssm.bsmauth.domain.user.presentation.dto.response.OtherUserResponse;
 import bssm.bsmauth.domain.user.presentation.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.domain.UserTokenType;
 import bssm.bsmauth.domain.user.domain.UserRole;
@@ -49,6 +50,12 @@ public class UserService {
     private String PUBLIC_RESOURCE_PATH;
     @Value("${env.file.path.upload.profile}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
+
+    public OtherUserResponse getOtherUserInfo(long userCode) {
+        return userRepository.findById(userCode)
+                .orElseThrow(NotFoundException::new)
+                .toOtherUserResponse();
+    }
 
     @Transactional
     public void studentSignUp(UserSignUpRequest dto) throws Exception {

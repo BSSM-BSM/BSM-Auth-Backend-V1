@@ -1,6 +1,7 @@
 package bssm.bsmauth.domain.user.domain;
 
-import bssm.bsmauth.domain.user.presentation.dto.response.UserInfoResponse;
+import bssm.bsmauth.domain.user.presentation.dto.response.OtherUserResponse;
+import bssm.bsmauth.domain.user.presentation.dto.response.UserResponse;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.*;
 
@@ -72,8 +73,8 @@ public class User extends BaseTimeEntity {
         this.nickname = nickname;
     }
 
-    public UserInfoResponse toUserInfoResponse() {
-        UserInfoResponse.UserInfoResponseBuilder builder = UserInfoResponse.builder()
+    public UserResponse toUserResponse() {
+        UserResponse.UserResponseBuilder builder = UserResponse.builder()
                 .code(code)
                 .role(role)
                 .nickname(nickname)
@@ -89,6 +90,18 @@ public class User extends BaseTimeEntity {
                             .teacher(teacher.toInfo());
                 }
         ).build();
+    }
+
+    public OtherUserResponse toOtherUserResponse() {
+        UserResponse user = this.toUserResponse();
+        return OtherUserResponse.builder()
+                .code(user.getCode())
+                .role(user.getRole())
+                .nickname(user.getNickname())
+                .createdAt(user.getCreatedAt())
+                .student(user.getStudent())
+                .teacher(user.getTeacher())
+                .build();
     }
 
 }

@@ -43,10 +43,5 @@ public class UserSignUpRequest {
     private String nickname;
 
     @NotBlank
-    @Size(
-            min = 6,
-            max = 6,
-            message = "인증코드는 6글자여야 합니다"
-    )
     private String authCode;
 }
