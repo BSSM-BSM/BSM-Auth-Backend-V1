@@ -1,8 +1,8 @@
 package bssm.bsmauth.domain.oauth.service;
 
-import bssm.bsmauth.global.exception.exceptions.NotFoundException;
+import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.domain.OauthScope;
-import bssm.bsmauth.domain.oauth.domain.repositories.OauthScopeRepository;
+import bssm.bsmauth.domain.oauth.domain.repository.OauthScopeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,7 +1,7 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.global.exception.HttpError;
-import bssm.bsmauth.global.exception.HttpErrorResponse;
+import bssm.bsmauth.global.error.HttpError;
+import bssm.bsmauth.global.error.HttpErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

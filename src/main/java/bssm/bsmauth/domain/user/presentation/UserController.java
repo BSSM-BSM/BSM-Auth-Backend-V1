@@ -8,7 +8,6 @@ import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherEmailDto
 import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherSignUpRequest;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.utils.CookieUtil;
-import bssm.bsmauth.global.utils.JwtUtil;
 import bssm.bsmauth.global.utils.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -24,8 +24,6 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final JwtUtil jwtUtil;
-    private final CookieUtil cookieUtil;
     private final UserService userService;
     private final UserUtil userUtil;
 
@@ -49,9 +47,8 @@ public class UserController {
     }
 
     @DeleteMapping("logout")
-    public void logout(HttpServletResponse res) {
-        res.addCookie(cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
-        res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
+    public void logout(HttpServletRequest req, HttpServletResponse res) {
+        userService.logout(req, res);
     }
 
     @PostMapping("student")
@@ -65,20 +62,8 @@ public class UserController {
     }
 
     @PostMapping("login")
-    public UserLoginResponseDto login(@Valid @RequestBody LoginRequest dto, HttpServletResponse res) throws Exception {
-        User user = userService.login(dto);
-
-        String token = jwtUtil.createAccessToken(user);
-        String refreshToken = jwtUtil.createRefreshToken(user.getCode());
-        Cookie tokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
-        Cookie refreshTokenCookie = cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, JWT_REFRESH_TOKEN_MAX_TIME);
-        res.addCookie(tokenCookie);
-        res.addCookie(refreshTokenCookie);
-
-        return UserLoginResponseDto.builder()
-                .accessToken(token)
-                .refreshToken(refreshToken)
-                .build();
+    public UserLoginResponse login(@Valid @RequestBody LoginRequest dto, HttpServletResponse res) throws Exception {
+        return userService.loginPostProcess(res, userService.login(dto));
     }
 
     @PutMapping("pw")
@@ -92,19 +77,13 @@ public class UserController {
     }
 
     @GetMapping("pw/token")
-    public ResetPwTokenInfoDto getResetPwTokenInfo(@Valid @RequestParam String token) throws Exception {
+    public ResetPwTokenResponse getResetPwTokenInfo(@Valid @RequestParam String token) throws Exception {
         return userService.getResetPwTokenInfo(token);
     }
 
     @PutMapping("nickname")
-    public UserUpdateNicknameResponseDto updateNickname(@Valid @RequestBody UpdateNicknameRequest dto, HttpServletResponse res) throws Exception {
-        User user = userService.updateNickname(userUtil.getUser(), dto);
-
-        String token = jwtUtil.createAccessToken(user);
-        Cookie tokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
-        res.addCookie(tokenCookie);
-
-        return new UserUpdateNicknameResponseDto(token);
+    public void updateNickname(@Valid @RequestBody UpdateNicknameRequest dto, HttpServletResponse res) throws Exception {
+        userService.updateNickname(userUtil.getUser(), dto);
     }
 
     @PostMapping("profile")

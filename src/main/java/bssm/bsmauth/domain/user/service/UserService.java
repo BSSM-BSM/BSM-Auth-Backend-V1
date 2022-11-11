@@ -1,20 +1,23 @@
 package bssm.bsmauth.domain.user.service;
 
 import bssm.bsmauth.domain.user.domain.*;
-import bssm.bsmauth.domain.user.domain.repositories.*;
+import bssm.bsmauth.domain.user.domain.repository.*;
+import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.domain.user.presentation.dto.request.*;
 import bssm.bsmauth.domain.user.presentation.dto.request.student.FindStudentRequest;
 import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherEmailDto;
 import bssm.bsmauth.domain.user.presentation.dto.request.teacher.TeacherSignUpRequest;
 import bssm.bsmauth.domain.user.presentation.dto.response.OtherUserResponse;
-import bssm.bsmauth.domain.user.presentation.dto.response.UserResponseDto;
 import bssm.bsmauth.domain.user.domain.UserTokenType;
 import bssm.bsmauth.domain.user.domain.UserRole;
-import bssm.bsmauth.global.exception.exceptions.BadRequestException;
-import bssm.bsmauth.global.exception.exceptions.ConflictException;
-import bssm.bsmauth.global.exception.exceptions.InternalServerException;
-import bssm.bsmauth.global.exception.exceptions.NotFoundException;
-import bssm.bsmauth.domain.user.presentation.dto.response.ResetPwTokenInfoDto;
+import bssm.bsmauth.domain.user.presentation.dto.response.UserLoginResponse;
+import bssm.bsmauth.global.error.exceptions.BadRequestException;
+import bssm.bsmauth.global.error.exceptions.ConflictException;
+import bssm.bsmauth.global.error.exceptions.InternalServerException;
+import bssm.bsmauth.global.error.exceptions.NotFoundException;
+import bssm.bsmauth.domain.user.presentation.dto.response.ResetPwTokenResponse;
+import bssm.bsmauth.global.jwt.JwtProvider;
+import bssm.bsmauth.global.utils.CookieUtil;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -40,12 +46,26 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserFacade userFacade;
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final TokenRepository tokenRepository;
     private final TeacherAuthCodeRepository teacherAuthCodeRepository;
     private final UserMailProvider userMailService;
+    private final JwtProvider jwtProvider;
+    private final CookieUtil cookieUtil;
+
+    @Value("${env.cookie.name.token}")
+    private String TOKEN_COOKIE_NAME;
+    @Value("${env.cookie.name.refreshToken}")
+    private String REFRESH_TOKEN_COOKIE_NAME;
+    @Value("${env.jwt.time.token}")
+    private long JWT_TOKEN_MAX_TIME;
+    @Value("${env.jwt.time.refreshToken}")
+    private long JWT_REFRESH_TOKEN_MAX_TIME;
+
     @Value("${env.file.path.base}")
     private String PUBLIC_RESOURCE_PATH;
     @Value("${env.file.path.upload.profile}")
@@ -143,6 +163,36 @@ public class UserService {
         return user;
     }
 
+    public UserLoginResponse loginPostProcess(HttpServletResponse res, User user) {
+        String token = jwtProvider.createAccessToken(user);
+        String refreshToken = jwtProvider.createRefreshToken(user.getCode());
+
+        Cookie tokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
+        Cookie refreshTokenCookie = cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, JWT_REFRESH_TOKEN_MAX_TIME);
+        res.addCookie(tokenCookie);
+        res.addCookie(refreshTokenCookie);
+
+        return UserLoginResponse.builder()
+                .accessToken(token)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    @Transactional
+    public void logout(HttpServletRequest req, HttpServletResponse res) {
+        Cookie refreshTokenCookie = cookieUtil.getCookie(req, REFRESH_TOKEN_COOKIE_NAME);
+        if (refreshTokenCookie != null) {
+            try {
+                refreshTokenRepository.findById(
+                        jwtProvider.getRefreshToken(refreshTokenCookie.getValue())
+                ).ifPresent(token -> token.setAvailable(false));
+            } catch (Exception ignored) {}
+        }
+
+        res.addCookie(cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
+        res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
+    }
+
     public void updatePw(User user, UpdatePwRequest dto) throws Exception {
         if (!dto.getNewPw().equals(dto.getCheckNewPw())) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
@@ -175,17 +225,17 @@ public class UserService {
         tokenRepository.save(token);
     }
 
-    public ResetPwTokenInfoDto getResetPwTokenInfo(String token) {
+    public ResetPwTokenResponse getResetPwTokenInfo(String token) {
         UserToken tokenInfo = tokenRepository.findByTokenAndType(token, UserTokenType.RESET_PW).orElseThrow(
                 () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
         );
-        return ResetPwTokenInfoDto.builder()
+        return ResetPwTokenResponse.builder()
                 .used(tokenInfo.isUsed())
                 .expireIn(tokenInfo.getExpireIn())
                 .build();
     }
 
-    public User updateNickname(User user, UpdateNicknameRequest dto) {
+    public void updateNickname(User user, UpdateNicknameRequest dto) {
         userRepository.findByNickname(dto.getNewNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
         User newUser = userRepository.findById(user.getCode()).orElseThrow(
@@ -193,7 +243,8 @@ public class UserService {
         );
 
         newUser.setNickname(dto.getNewNickname());
-        return userRepository.save(newUser);
+        userRepository.save(newUser);
+        userFacade.saveCacheUser(newUser);
     }
 
     public void uploadProfile(User user, MultipartFile file) {

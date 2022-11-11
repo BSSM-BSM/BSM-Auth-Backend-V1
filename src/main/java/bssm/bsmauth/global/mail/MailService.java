@@ -1,6 +1,6 @@
 package bssm.bsmauth.global.mail;
 
-import bssm.bsmauth.global.exception.exceptions.InternalServerException;
+import bssm.bsmauth.global.error.exceptions.InternalServerException;
 import bssm.bsmauth.global.mail.dto.MailDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

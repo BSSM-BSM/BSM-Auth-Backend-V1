@@ -104,4 +104,16 @@ public class User extends BaseTimeEntity {
                 .build();
     }
 
+    public UserRedis toUserRedis() {
+        return UserRedis.builder()
+                .code(code)
+                .nickname(nickname)
+                .role(role)
+                .studentId(studentId)
+                .student(student)
+                .teacherId(teacherId)
+                .teacher(teacher)
+                .build();
+    }
+
 }
