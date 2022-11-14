@@ -28,6 +28,7 @@ public class UserFacade {
     }
 
     public void saveCacheUser(User user) {
+        System.out.println("user = " + user.getCode());
         userRedisRepository.save(user.toUserRedis());
     }
 
