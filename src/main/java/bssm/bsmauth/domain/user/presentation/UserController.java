@@ -38,7 +38,7 @@ public class UserController {
 
     @GetMapping()
     public UserResponse getUserInfo() {
-        return userUtil.getUser().toUserResponse();
+        return userService.getUserInfo(userUtil.getUser().getCode());
     }
 
     @GetMapping("{userCode}")

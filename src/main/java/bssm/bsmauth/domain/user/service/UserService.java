@@ -11,6 +11,7 @@ import bssm.bsmauth.domain.user.presentation.dto.response.OtherUserResponse;
 import bssm.bsmauth.domain.user.domain.UserTokenType;
 import bssm.bsmauth.domain.user.domain.UserRole;
 import bssm.bsmauth.domain.user.presentation.dto.response.UserLoginResponse;
+import bssm.bsmauth.domain.user.presentation.dto.response.UserResponse;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
 import bssm.bsmauth.global.error.exceptions.InternalServerException;
@@ -70,6 +71,12 @@ public class UserService {
     private String PUBLIC_RESOURCE_PATH;
     @Value("${env.file.path.upload.profile}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
+
+    public UserResponse getUserInfo(long userCode) {
+        return userRepository.findById(userCode)
+                .orElseThrow(NotFoundException::new)
+                .toUserResponse();
+    }
 
     public OtherUserResponse getOtherUserInfo(long userCode) {
         return userRepository.findById(userCode)

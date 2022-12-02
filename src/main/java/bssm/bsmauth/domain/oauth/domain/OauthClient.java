@@ -7,7 +7,9 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -27,9 +29,6 @@ public class OauthClient extends BaseTimeEntity {
     @Column(nullable = false, length = 32)
     private String serviceName;
 
-    @Column(nullable = false, length = 100)
-    private String redirectURI;
-
     @Column(columnDefinition = "INT UNSIGNED")
     private Long usercode;
 
@@ -42,18 +41,21 @@ public class OauthClient extends BaseTimeEntity {
     private OauthAccessType access;
 
     @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
-    private List<OauthClientScope> scopes = new ArrayList<>();
+    private Set<OauthClientScope> scopes = new HashSet<>();
+
+    @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private Set<OauthRedirectUri> redirectUris = new HashSet<>();
 
     @Builder
-    public OauthClient(String id, String clientSecret, String domain, String serviceName, String redirectURI, Long usercode, User user, OauthAccessType access, List<OauthClientScope> scopes) {
+    public OauthClient(String id, String clientSecret, String domain, String serviceName, Long usercode, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
         this.id = id;
         this.clientSecret = clientSecret;
         this.domain = domain;
         this.serviceName = serviceName;
-        this.redirectURI = redirectURI;
         this.usercode = usercode;
         this.user = user;
         this.access = access;
         this.scopes = scopes;
+        this.redirectUris = redirectUris;
     }
 }

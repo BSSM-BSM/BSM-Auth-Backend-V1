@@ -77,7 +77,7 @@ public class OauthService {
         oauthAuthCodeRepository.save(authCode);
 
         return OauthAuthorizationResponseDto.builder()
-                .redirectURI(client.getRedirectURI() + "?code=" + authCode.getCode())
+                .redirectURI(dto.getRedirectURI() + "?code=" + authCode.getCode())
                 .build();
     }
 
@@ -88,7 +88,10 @@ public class OauthService {
                     build()
             );
         });
-        if (!client.getRedirectURI().equals(redirectURI))
+        List<String> uris = client.getRedirectUris()
+                .stream().map(OauthRedirectUri::toUriString)
+                .toList();
+        if (uris.contains(redirectURI))
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
                     build()
@@ -209,7 +212,7 @@ public class OauthService {
                 .clientSecret(getRandomStr(32))
                 .domain(dto.getDomain())
                 .serviceName(dto.getServiceName())
-                .redirectURI(dto.getRedirectURI())
+//                .redirectURI(dto.getRedirectURI())
                 .usercode(user.getCode())
                 .access(dto.getAccess())
                 .build();
@@ -244,7 +247,11 @@ public class OauthService {
                             .clientSecret(client.getClientSecret())
                             .domain(client.getDomain())
                             .serviceName(client.getServiceName())
-                            .redirectURI(client.getRedirectURI())
+                            .redirectUriList(
+                                    client.getRedirectUris().stream()
+                                            .map(OauthRedirectUri::toUriString)
+                                            .toList()
+                            )
                             .scopeList(scopeList)
                             .access(client.getAccess())
                             .build()
