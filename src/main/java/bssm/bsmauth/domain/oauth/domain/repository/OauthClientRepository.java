@@ -11,5 +11,5 @@ import java.util.List;
 public interface OauthClientRepository extends JpaRepository<OauthClient, String> {
 
     @EntityGraph(attributePaths = "scopes")
-    List<OauthClient> findByUsercode(Long usercode);
+    List<OauthClient> findByUserCode(Long userCode);
 }

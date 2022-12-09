@@ -6,9 +6,7 @@ import bssm.bsmauth.domain.user.domain.User;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -30,10 +28,10 @@ public class OauthClient extends BaseTimeEntity {
     private String serviceName;
 
     @Column(columnDefinition = "INT UNSIGNED")
-    private Long usercode;
+    private Long userCode;
 
     @ManyToOne
-    @JoinColumn(name = "usercode", insertable = false, updatable = false)
+    @JoinColumn(name = "userCode", insertable = false, updatable = false)
     private User user;
 
     @Column(length = 12, nullable = false)
@@ -47,12 +45,12 @@ public class OauthClient extends BaseTimeEntity {
     private Set<OauthRedirectUri> redirectUris = new HashSet<>();
 
     @Builder
-    public OauthClient(String id, String clientSecret, String domain, String serviceName, Long usercode, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
+    public OauthClient(String id, String clientSecret, String domain, String serviceName, Long userCode, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
         this.id = id;
         this.clientSecret = clientSecret;
         this.domain = domain;
         this.serviceName = serviceName;
-        this.usercode = usercode;
+        this.userCode = userCode;
         this.user = user;
         this.access = access;
         this.scopes = scopes;

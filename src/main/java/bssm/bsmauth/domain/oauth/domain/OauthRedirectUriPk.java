@@ -17,7 +17,7 @@ public class OauthRedirectUriPk implements Serializable {
     @Column(length = 8)
     private String clientId;
 
-    @Column(length = 16)
+    @Column(length = 100)
     private String redirectUri;
 
     @Builder

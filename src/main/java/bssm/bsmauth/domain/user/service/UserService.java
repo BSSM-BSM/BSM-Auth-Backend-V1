@@ -43,6 +43,8 @@ import java.util.HexFormat;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import static bssm.bsmauth.global.utils.Util.getRandomStr;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -370,13 +372,6 @@ public class UserService {
         String email = user.getRole() == UserRole.TEACHER? user.getTeacher().getEmail(): user.getStudent().getEmail();
         userMailService.sendResetPwMail(email, token.getToken());
         tokenRepository.save(token);
-    }
-
-    private String getRandomStr(int length) {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] randomBytes = new byte[length / 2];
-        secureRandom.nextBytes(randomBytes);
-        return HexFormat.of().formatHex(randomBytes);
     }
 
     private String encryptPw(String salt, String pw) throws NoSuchAlgorithmException {

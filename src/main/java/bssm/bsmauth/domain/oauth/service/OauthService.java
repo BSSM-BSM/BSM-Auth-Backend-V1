@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.oauth.service;
 
 import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.OauthAccessType;
+import bssm.bsmauth.domain.oauth.domain.repository.*;
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ForbiddenException;
@@ -12,10 +13,6 @@ import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientReque
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
-import bssm.bsmauth.domain.oauth.domain.repository.OauthAuthCodeRepository;
-import bssm.bsmauth.domain.oauth.domain.repository.OauthClientRepository;
-import bssm.bsmauth.domain.oauth.domain.repository.OauthClientScopeRepository;
-import bssm.bsmauth.domain.oauth.domain.repository.OauthTokenRepository;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
 import com.google.common.collect.ImmutableMap;
@@ -23,12 +20,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
+
+import static bssm.bsmauth.global.utils.Util.getRandomStr;
 
 @Service
 @RequiredArgsConstructor
@@ -36,16 +32,18 @@ public class OauthService {
 
     private final OauthClientRepository oauthClientRepository;
     private final OauthClientScopeRepository oauthClientScopeRepository;
+    private final OauthRedirectUriRepository oauthRedirectUriRepository;
     private final OauthAuthCodeRepository oauthAuthCodeRepository;
     private final OauthTokenRepository oauthTokenRepository;
     private final UserRepository userRepository;
     private final OauthScopeProvider oauthScopeProvider;
+    private final OauthFacade oauthFacade;
 
     public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
         OauthClient client = checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
-        if (oauthTokenRepository.findByUsercodeAndClientId(user.getCode(), clientId).isPresent()) {
+        if (oauthTokenRepository.findByUserCodeAndClientId(user.getCode(), clientId).isPresent()) {
             return OauthAuthenticationResponseDto.builder()
                     .authorized(true)
                     .domain(client.getDomain())
@@ -71,7 +69,7 @@ public class OauthService {
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(getRandomStr(32))
-                .usercode(user.getCode())
+                .userCode(user.getCode())
                 .oauthClient(client)
                 .build();
         oauthAuthCodeRepository.save(authCode);
@@ -123,7 +121,7 @@ public class OauthService {
         authCode.setExpire(true);
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUsercodeAndClientId(authCode.getUsercode(), dto.getClientId());
+        Optional<OauthToken> token = oauthTokenRepository.findByUserCodeAndClientId(authCode.getUserCode(), dto.getClientId());
         if (token.isPresent()) {
             return OauthTokenResponseDto.builder()
                     .token(token.get().getToken())
@@ -132,7 +130,7 @@ public class OauthService {
 
         OauthToken newToken = OauthToken.builder()
                 .token(getRandomStr(32))
-                .usercode(authCode.getUsercode())
+                .usercode(authCode.getUserCode())
                 .oauthClient(client)
                 .build();
         oauthTokenRepository.save(newToken);
@@ -200,38 +198,25 @@ public class OauthService {
                 .build();
     }
 
+    @Transactional
     public void createClient(User user, CreateOauthClientRequest dto) {
-        if (!uriCheck(dto.getDomain(), dto.getRedirectURI()))
-            throw new BadRequestException(ImmutableMap.<String, String>builder().
-                    put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
-                    build()
-            );
+        dto.getRedirectUriList().forEach(uri -> {
+            oauthFacade.uriCheck(dto.getDomain(), uri);
+        });
 
-        OauthClient client = OauthClient.builder()
-                .id(getRandomStr(8))
-                .clientSecret(getRandomStr(32))
-                .domain(dto.getDomain())
-                .serviceName(dto.getServiceName())
-//                .redirectURI(dto.getRedirectURI())
-                .usercode(user.getCode())
-                .access(dto.getAccess())
-                .build();
-
-        List<OauthClientScope> clientScopeList = new ArrayList<>();
-        for (String scope : dto.getScopeList()) {
-            clientScopeList.add(
-                    OauthClientScope.builder()
-                            .oauthClientScopePk(new OauthClientScopePk(client.getId(), oauthScopeProvider.getScope(scope).getId()))
-                            .build()
-            );
-        }
+        OauthClient client = dto.toEntity(user);
 
         oauthClientRepository.save(client);
-        oauthClientScopeRepository.saveAll(clientScopeList);
+        oauthClientScopeRepository.saveAll(
+                dto.toScopeEntitySet(client.getId(), oauthScopeProvider)
+        );
+        oauthRedirectUriRepository.saveAll(
+                dto.toRedirectEntitySet(client.getId())
+        );
     }
 
     public List<OauthClientResponseDto> getClientList(User user) {
-        List<OauthClient> clientList = oauthClientRepository.findByUsercode(user.getCode());
+        List<OauthClient> clientList = oauthClientRepository.findByUserCode(user.getCode());
 
         List<OauthClientResponseDto> clientResponseDtoList = new ArrayList<>();
 
@@ -270,21 +255,10 @@ public class OauthService {
         OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
                 () -> {throw new NotFoundException("클라이언트를 찾을 수 없습니다");}
         );
-        if (!client.getUsercode().equals(user.getCode())) {
+        if (!client.getUserCode().equals(user.getCode())) {
             throw new ForbiddenException("권한이 없습니다");
         }
 
         oauthClientRepository.deleteById(clientId);
-    }
-
-    private String getRandomStr(int length) {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] randomBytes = new byte[length / 2];
-        secureRandom.nextBytes(randomBytes);
-        return HexFormat.of().formatHex(randomBytes);
-    }
-
-    private boolean uriCheck (String domain, String uri) {
-        return Pattern.matches("(https?://)("+domain+")(:(6[0-5]{2}[0-3][0-5]|[1-5][0-9]{4}|[1-9][0-9]{0,3}))?/.*", uri);
     }
 }
