@@ -1,8 +1,8 @@
 package bssm.bsmauth.domain.oauth.service;
 
 import bssm.bsmauth.domain.oauth.domain.*;
-import bssm.bsmauth.domain.oauth.domain.OauthAccessType;
 import bssm.bsmauth.domain.oauth.domain.repository.*;
+import bssm.bsmauth.domain.oauth.facade.OauthFacade;
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ForbiddenException;
@@ -30,7 +30,6 @@ import static bssm.bsmauth.global.utils.Util.getRandomStr;
 @RequiredArgsConstructor
 public class OauthService {
 
-    private final OauthClientRepository oauthClientRepository;
     private final OauthClientScopeRepository oauthClientScopeRepository;
     private final OauthRedirectUriRepository oauthRedirectUriRepository;
     private final OauthAuthCodeRepository oauthAuthCodeRepository;
@@ -40,7 +39,7 @@ public class OauthService {
     private final OauthFacade oauthFacade;
 
     public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
-        OauthClient client = checkClient(user, clientId, redirectURI);
+        OauthClient client = oauthFacade.checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
         if (oauthTokenRepository.findByUserCodeAndClientId(user.getCode(), clientId).isPresent()) {
@@ -52,9 +51,8 @@ public class OauthService {
         }
 
         List<OauthScope> scopeList = new ArrayList<>();
-        client.getScopes().forEach(scope -> {
-            scopeList.add(oauthScopeProvider.getScope(scope.getOauthScope().getId()));
-        });
+        client.getScopes()
+                .forEach(scope -> scopeList.add(oauthScopeProvider.getScope(scope.getOauthScope().getId())));
 
         return OauthAuthenticationResponseDto.builder()
                 .authorized(false)
@@ -65,7 +63,7 @@ public class OauthService {
     }
 
     public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationRequest dto) {
-        OauthClient client = checkClient(user, dto.getClientId(), dto.getRedirectURI());
+        OauthClient client = oauthFacade.checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(getRandomStr(32))
@@ -77,33 +75,6 @@ public class OauthService {
         return OauthAuthorizationResponseDto.builder()
                 .redirectURI(dto.getRedirectURI() + "?code=" + authCode.getCode())
                 .build();
-    }
-
-    private OauthClient checkClient(User user, String clientId, String redirectURI) {
-        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(() -> {
-            throw new BadRequestException(ImmutableMap.<String, String>builder().
-                    put("clientId", "클라이언트를 찾을 수 없습니다").
-                    build()
-            );
-        });
-        List<String> uris = client.getRedirectUris()
-                .stream().map(OauthRedirectUri::toUriString)
-                .toList();
-        if (uris.contains(redirectURI))
-            throw new BadRequestException(ImmutableMap.<String, String>builder().
-                    put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
-                    build()
-            );
-        if (client.getAccess() != OauthAccessType.ALL && client.getAccess() != OauthAccessType.valueOf(user.getRole().name())) {
-            String msg;
-            switch (client.getAccess()) {
-                case STUDENT -> msg = "해당 서비스는 학생만 사용할 수 있습니다";
-                case TEACHER -> msg = "해당 서비스는 선생님만 사용할 수 있습니다";
-                default -> throw new InternalServerException();
-            }
-            throw new ForbiddenException(msg);
-        }
-        return client;
     }
 
     public OauthTokenResponseDto getToken(OauthGetTokenRequest dto) {
@@ -157,9 +128,8 @@ public class OauthService {
         );
 
         List<String> scopeList = new ArrayList<>();
-        client.getScopes().forEach(scope -> {
-            scopeList.add(scope.getOauthScope().getId());
-        });
+        client.getScopes()
+                .forEach(scope -> scopeList.add(scope.getOauthScope().getId()));
 
         OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
         scopeList.forEach(scope -> {
@@ -190,23 +160,21 @@ public class OauthService {
 
         return OauthResourceResponseDto.builder()
                 .scopeList(scopeList)
-                .user(
-                        oauthUserDto
-                                .role(user.getRole())
-                                .build()
+                .user(oauthUserDto
+                        .role(user.getRole())
+                        .build()
                 )
                 .build();
     }
 
     @Transactional
     public void createClient(User user, CreateOauthClientRequest dto) {
-        dto.getRedirectUriList().forEach(uri -> {
-            oauthFacade.uriCheck(dto.getDomain(), uri);
-        });
+        dto.getRedirectUriList()
+                .forEach(uri -> oauthFacade.uriCheck(dto.getDomain(), uri));
 
         OauthClient client = dto.toEntity(user);
 
-        oauthClientRepository.save(client);
+        oauthFacade.save(client);
         oauthClientScopeRepository.saveAll(
                 dto.toScopeEntitySet(client.getId(), oauthScopeProvider)
         );
@@ -216,15 +184,14 @@ public class OauthService {
     }
 
     public List<OauthClientResponseDto> getClientList(User user) {
-        List<OauthClient> clientList = oauthClientRepository.findByUserCode(user.getCode());
+        List<OauthClient> clientList = oauthFacade.findAllByUser(user);
 
         List<OauthClientResponseDto> clientResponseDtoList = new ArrayList<>();
 
         clientList.forEach(client -> {
             List<String> scopeList = new ArrayList<>();
-            client.getScopes().forEach(scope -> {
-                scopeList.add(scope.getOauthScope().getId());
-            });
+            client.getScopes()
+                    .forEach(scope -> scopeList.add(scope.getOauthScope().getId()));
 
             clientResponseDtoList.add(
                     OauthClientResponseDto.builder()
@@ -252,13 +219,11 @@ public class OauthService {
 
     @Transactional
     public void deleteClient(User user, String clientId) {
-        OauthClient client = oauthClientRepository.findById(clientId).orElseThrow(
-                () -> {throw new NotFoundException("클라이언트를 찾을 수 없습니다");}
-        );
+        OauthClient client = oauthFacade.findById(clientId);
         if (!client.getUserCode().equals(user.getCode())) {
             throw new ForbiddenException("권한이 없습니다");
         }
 
-        oauthClientRepository.deleteById(clientId);
+        oauthFacade.delete(client);
     }
 }
