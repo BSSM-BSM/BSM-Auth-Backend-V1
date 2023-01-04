@@ -28,19 +28,19 @@ public class OauthToken extends BaseTimeEntity {
     private boolean expire;
 
     @Column(columnDefinition = "INT UNSIGNED")
-    private Long usercode;
+    private Long userCode;
 
     @ManyToOne
-    @JoinColumn(name = "usercode", insertable = false, updatable = false)
+    @JoinColumn(name = "userCode", insertable = false, updatable = false)
     private User user;
 
     @Builder
-    public OauthToken(String token, String clientId, OauthClient oauthClient, boolean expire, Long usercode, User user) {
+    public OauthToken(String token, String clientId, OauthClient oauthClient, boolean expire, Long userCode, User user) {
         this.token = token;
         this.clientId = clientId;
         this.oauthClient = oauthClient;
         this.expire = expire;
-        this.usercode = usercode;
+        this.userCode = userCode;
         this.user = user;
     }
 }

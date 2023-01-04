@@ -1,6 +1,7 @@
 package bssm.bsmauth.domain.oauth.presentation;
 
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.domain.oauth.service.OauthManageService;
 import bssm.bsmauth.domain.oauth.service.OauthService;
 import bssm.bsmauth.global.utils.UserUtil;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientRequest;
@@ -21,6 +22,7 @@ public class OauthController {
 
     private final UserUtil userUtil;
     private final OauthService oauthService;
+    private final OauthManageService oauthManageService;
 
     @GetMapping("authenticate")
     public OauthAuthenticationResponseDto authentication(
@@ -47,21 +49,21 @@ public class OauthController {
 
     @PostMapping("client")
     public void createClient(@Valid @RequestBody CreateOauthClientRequest dto) {
-        oauthService.createClient(userUtil.getUser(), dto);
+        oauthManageService.createClient(userUtil.getUser(), dto);
     }
 
     @GetMapping("client")
     public List<OauthClientResponseDto> getClientList() {
-        return oauthService.getClientList(userUtil.getUser());
+        return oauthManageService.getClientList(userUtil.getUser());
     }
 
     @GetMapping("scopes")
     public List<OauthScope> getScopeList() {
-        return oauthService.getScopeList();
+        return oauthManageService.getScopeList();
     }
 
     @DeleteMapping("client/{clientId}")
     public void deleteClient(@PathVariable String clientId) {
-        oauthService.deleteClient(userUtil.getUser(), clientId);
+        oauthManageService.deleteClient(userUtil.getUser(), clientId);
     }
 }

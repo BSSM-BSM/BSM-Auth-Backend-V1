@@ -1,6 +1,8 @@
 package bssm.bsmauth.domain.oauth.domain;
 
 
+import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
+import bssm.bsmauth.domain.oauth.presentation.dto.response.OauthClientResponseDto;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.domain.user.domain.User;
 import lombok.*;
@@ -56,4 +58,21 @@ public class OauthClient extends BaseTimeEntity {
         this.scopes = scopes;
         this.redirectUris = redirectUris;
     }
+
+    public OauthClientResponseDto toResponse() {
+        return OauthClientResponseDto.builder()
+                .clientId(id)
+                .clientSecret(clientSecret)
+                .domain(domain)
+                .serviceName(serviceName)
+                .redirectUriList(redirectUris.stream()
+                        .map(OauthRedirectUri::toUriString)
+                        .toList())
+                .scopeList(scopes.stream()
+                        .map(scope -> scope.getOauthScope().getId())
+                        .toList())
+                .access(access)
+                .build();
+    }
+
 }

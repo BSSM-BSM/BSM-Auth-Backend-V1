@@ -5,11 +5,9 @@ import bssm.bsmauth.domain.oauth.domain.repository.*;
 import bssm.bsmauth.domain.oauth.facade.OauthFacade;
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
-import bssm.bsmauth.global.error.exceptions.ForbiddenException;
 import bssm.bsmauth.global.error.exceptions.InternalServerException;
 import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.presentation.dto.OauthUserDto;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
@@ -18,7 +16,6 @@ import bssm.bsmauth.domain.user.domain.repository.UserRepository;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,7 +98,7 @@ public class OauthService {
 
         OauthToken newToken = OauthToken.builder()
                 .token(getRandomStr(32))
-                .usercode(authCode.getUserCode())
+                .userCode(authCode.getUserCode())
                 .oauthClient(client)
                 .build();
         oauthTokenRepository.save(newToken);
@@ -123,7 +120,7 @@ public class OauthService {
             );
         }
 
-        User user = userRepository.findById(token.getUsercode()).orElseThrow(
+        User user = userRepository.findById(token.getUserCode()).orElseThrow(
                 () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
         );
 
@@ -165,65 +162,5 @@ public class OauthService {
                         .build()
                 )
                 .build();
-    }
-
-    @Transactional
-    public void createClient(User user, CreateOauthClientRequest dto) {
-        dto.getRedirectUriList()
-                .forEach(uri -> oauthFacade.uriCheck(dto.getDomain(), uri));
-
-        OauthClient client = dto.toEntity(user);
-
-        oauthFacade.save(client);
-        oauthClientScopeRepository.saveAll(
-                dto.toScopeEntitySet(client.getId(), oauthScopeProvider)
-        );
-        oauthRedirectUriRepository.saveAll(
-                dto.toRedirectEntitySet(client.getId())
-        );
-    }
-
-    public List<OauthClientResponseDto> getClientList(User user) {
-        List<OauthClient> clientList = oauthFacade.findAllByUser(user);
-
-        List<OauthClientResponseDto> clientResponseDtoList = new ArrayList<>();
-
-        clientList.forEach(client -> {
-            List<String> scopeList = new ArrayList<>();
-            client.getScopes()
-                    .forEach(scope -> scopeList.add(scope.getOauthScope().getId()));
-
-            clientResponseDtoList.add(
-                    OauthClientResponseDto.builder()
-                            .clientId(client.getId())
-                            .clientSecret(client.getClientSecret())
-                            .domain(client.getDomain())
-                            .serviceName(client.getServiceName())
-                            .redirectUriList(
-                                    client.getRedirectUris().stream()
-                                            .map(OauthRedirectUri::toUriString)
-                                            .toList()
-                            )
-                            .scopeList(scopeList)
-                            .access(client.getAccess())
-                            .build()
-            );
-        });
-
-        return clientResponseDtoList;
-    }
-
-    public List<OauthScope> getScopeList() {
-        return oauthScopeProvider.getAllScope();
-    }
-
-    @Transactional
-    public void deleteClient(User user, String clientId) {
-        OauthClient client = oauthFacade.findById(clientId);
-        if (!client.getUserCode().equals(user.getCode())) {
-            throw new ForbiddenException("권한이 없습니다");
-        }
-
-        oauthFacade.delete(client);
     }
 }

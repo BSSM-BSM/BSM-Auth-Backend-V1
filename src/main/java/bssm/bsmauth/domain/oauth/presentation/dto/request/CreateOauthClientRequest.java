@@ -1,6 +1,7 @@
 package bssm.bsmauth.domain.oauth.presentation.dto.request;
 
 import bssm.bsmauth.domain.oauth.domain.*;
+import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
 import bssm.bsmauth.domain.oauth.service.OauthScopeProvider;
 import bssm.bsmauth.domain.user.domain.User;
 import lombok.Getter;

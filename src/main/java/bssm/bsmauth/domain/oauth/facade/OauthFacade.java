@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.oauth.facade;
 
-import bssm.bsmauth.domain.oauth.domain.OauthAccessType;
+import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
 import bssm.bsmauth.domain.oauth.domain.OauthClient;
 import bssm.bsmauth.domain.oauth.domain.OauthRedirectUri;
 import bssm.bsmauth.domain.oauth.domain.repository.OauthClientRepository;

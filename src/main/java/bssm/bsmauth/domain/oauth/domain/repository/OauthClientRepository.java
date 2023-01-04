@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface OauthClientRepository extends JpaRepository<OauthClient, String> {
 
-    @EntityGraph(attributePaths = "scopes")
+    @EntityGraph(attributePaths = {"scopes", "redirectUris"})
     List<OauthClient> findAllByUserCode(Long userCode);
 }
