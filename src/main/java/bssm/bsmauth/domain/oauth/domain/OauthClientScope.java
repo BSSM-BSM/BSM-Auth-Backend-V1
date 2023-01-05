@@ -10,9 +10,9 @@ import javax.persistence.*;
 public class OauthClientScope {
 
     @EmbeddedId
-    private OauthClientScopePk oauthClientScopePk;
+    private OauthClientScopePk pk;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne()
     @JoinColumn(name = "clientId", insertable = false, updatable = false)
     private OauthClient oauthClient;
 
@@ -21,9 +21,24 @@ public class OauthClientScope {
     private OauthScope oauthScope;
 
     @Builder
-    public OauthClientScope(OauthClientScopePk oauthClientScopePk, OauthClient oauthClient, OauthScope oauthScope) {
-        this.oauthClientScopePk = oauthClientScopePk;
+    public OauthClientScope(OauthClientScopePk pk, OauthClient oauthClient, OauthScope oauthScope) {
+        this.pk = pk;
         this.oauthClient = oauthClient;
         this.oauthScope = oauthScope;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OauthClientScope)) return false;
+
+        OauthClientScope that = (OauthClientScope) o;
+
+        return pk != null ? pk.equals(that.pk) : that.pk == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return pk != null ? pk.hashCode() : 0;
     }
 }

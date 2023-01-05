@@ -75,4 +75,15 @@ public class OauthClient extends BaseTimeEntity {
                 .build();
     }
 
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public void setAccess(OauthAccessType access) {
+        this.access = access;
+    }
 }

@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface OauthClientScopeRepository extends JpaRepository<OauthClientScope, OauthClientScopePk> {
 
-    List<OauthClientScope> findAllByOauthClientScopePkClientId(String clientId);
+    List<OauthClientScope> findAllByPkClientId(String clientId);
 }

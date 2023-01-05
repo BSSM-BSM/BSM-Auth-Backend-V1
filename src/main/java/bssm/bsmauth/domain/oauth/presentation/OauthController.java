@@ -1,19 +1,15 @@
 package bssm.bsmauth.domain.oauth.presentation;
 
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
-import bssm.bsmauth.domain.oauth.service.OauthManageService;
 import bssm.bsmauth.domain.oauth.service.OauthService;
 import bssm.bsmauth.global.utils.UserUtil;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
-import bssm.bsmauth.domain.oauth.domain.OauthScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("oauth")
@@ -22,7 +18,6 @@ public class OauthController {
 
     private final UserUtil userUtil;
     private final OauthService oauthService;
-    private final OauthManageService oauthManageService;
 
     @GetMapping("authenticate")
     public OauthAuthenticationResponseDto authentication(
@@ -47,23 +42,4 @@ public class OauthController {
         return oauthService.getResource(dto);
     }
 
-    @PostMapping("client")
-    public void createClient(@Valid @RequestBody CreateOauthClientRequest dto) {
-        oauthManageService.createClient(userUtil.getUser(), dto);
-    }
-
-    @GetMapping("client")
-    public List<OauthClientResponseDto> getClientList() {
-        return oauthManageService.getClientList(userUtil.getUser());
-    }
-
-    @GetMapping("scopes")
-    public List<OauthScope> getScopeList() {
-        return oauthManageService.getScopeList();
-    }
-
-    @DeleteMapping("client/{clientId}")
-    public void deleteClient(@PathVariable String clientId) {
-        oauthManageService.deleteClient(userUtil.getUser(), clientId);
-    }
 }

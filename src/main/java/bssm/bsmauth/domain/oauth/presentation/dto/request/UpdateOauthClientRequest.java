@@ -3,9 +3,9 @@ package bssm.bsmauth.domain.oauth.presentation.dto.request;
 import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
 import bssm.bsmauth.domain.oauth.service.OauthScopeProvider;
-import bssm.bsmauth.domain.user.domain.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -15,11 +15,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static bssm.bsmauth.global.utils.Util.getRandomStr;
-
 @Getter
 @NoArgsConstructor
-public class CreateOauthClientRequest {
+public class UpdateOauthClientRequest {
 
     @Size(min = 1, max = 63)
     @Pattern(
@@ -38,21 +36,6 @@ public class CreateOauthClientRequest {
 
     @Size(
             min = 1,
-            max = 10,
-            message = "리다이렉트 URI의 갯수는 1 ~ 10개여야 합니다"
-    )
-    private List<
-            @NotBlank
-            @Size(
-                    min = 1,
-                    max = 100,
-                    message = "리다이렉트 URI는 1 ~ 100글자여야 합니다"
-            )
-            String
-    > redirectUriList;
-
-    @Size(
-            min = 1,
             message = "사용할 정보는 1개 이상이어야 합니다"
     )
     private List<String> scopeList;
@@ -60,32 +43,11 @@ public class CreateOauthClientRequest {
     @NotNull
     private OauthAccessType access;
 
-    public OauthClient toEntity(User user) {
-        String clientId = getRandomStr(8);
-
-        return OauthClient.builder()
-                .id(clientId)
-                .clientSecret(getRandomStr(32))
-                .domain(domain)
-                .serviceName(serviceName)
-                .userCode(user.getCode())
-                .access(access)
-                .build();
-    }
-
-    public Set<OauthRedirectUri> toRedirectEntitySet(String clientId) {
-        return redirectUriList.stream()
-                .map(redirectUri -> toRedirectEntity(clientId, redirectUri))
-                .collect(Collectors.toSet());
-    }
-
-    private OauthRedirectUri toRedirectEntity(String clientId, String redirectUri) {
-        return OauthRedirectUri.builder().oauthClientScopePk(
-                OauthRedirectUriPk.builder()
-                        .clientId(clientId)
-                        .redirectUri(redirectUri)
-                        .build()
-        ).build();
+    @Transactional
+    public void updateClient(OauthClient client) {
+        client.setDomain(domain);
+        client.setServiceName(serviceName);
+        client.setAccess(access);
     }
 
     public Set<OauthClientScope> toScopeEntitySet(String clientId, OauthScopeProvider oauthScopeProvider) {
