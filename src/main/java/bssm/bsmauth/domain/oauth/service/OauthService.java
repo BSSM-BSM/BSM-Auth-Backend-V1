@@ -27,8 +27,6 @@ import static bssm.bsmauth.global.utils.Util.getRandomStr;
 @RequiredArgsConstructor
 public class OauthService {
 
-    private final OauthClientScopeRepository oauthClientScopeRepository;
-    private final OauthRedirectUriRepository oauthRedirectUriRepository;
     private final OauthAuthCodeRepository oauthAuthCodeRepository;
     private final OauthTokenRepository oauthTokenRepository;
     private final UserRepository userRepository;
@@ -109,9 +107,8 @@ public class OauthService {
     }
 
     public OauthResourceResponseDto getResource(OauthGetResourceRequest dto) {
-        OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false).orElseThrow(
-                () -> {throw new NotFoundException("토큰을 찾을 수 없습니다");}
-        );
+        OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false)
+                .orElseThrow(() -> new NotFoundException("토큰을 찾을 수 없습니다"));
         OauthClient client = token.getOauthClient();
         if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
@@ -120,9 +117,8 @@ public class OauthService {
             );
         }
 
-        User user = userRepository.findById(token.getUserCode()).orElseThrow(
-                () -> {throw new NotFoundException("유저를 찾을 수 없습니다");}
-        );
+        User user = userRepository.findById(token.getUserCode())
+                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다"));
 
         List<String> scopeList = new ArrayList<>();
         client.getScopes()

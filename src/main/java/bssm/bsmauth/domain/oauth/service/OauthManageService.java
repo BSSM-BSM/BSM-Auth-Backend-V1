@@ -3,37 +3,39 @@ package bssm.bsmauth.domain.oauth.service;
 import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.repository.OauthClientScopeRepository;
 import bssm.bsmauth.domain.oauth.domain.repository.OauthRedirectUriRepository;
-import bssm.bsmauth.domain.oauth.facade.OauthFacade;
+import bssm.bsmauth.domain.oauth.facade.OauthManageFacade;
+import bssm.bsmauth.domain.oauth.presentation.dto.request.AddOauthClientRedirectRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.UpdateOauthClientRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
 import bssm.bsmauth.domain.user.domain.User;
-import bssm.bsmauth.global.error.exceptions.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class OauthManageService {
 
     private final OauthClientScopeRepository oauthClientScopeRepository;
     private final OauthRedirectUriRepository oauthRedirectUriRepository;
     private final OauthScopeProvider oauthScopeProvider;
-    private final OauthFacade oauthFacade;
+    private final OauthManageFacade oauthManageFacade;
 
     @Transactional
     public void createClient(User user, CreateOauthClientRequest req) {
         req.getRedirectUriList()
-                .forEach(uri -> oauthFacade.uriCheck(req.getDomain(), uri));
+                .forEach(uri -> oauthManageFacade.uriCheck(req.getDomain(), uri));
 
         OauthClient client = req.toEntity(user);
 
-        oauthFacade.save(client);
+        oauthManageFacade.save(client);
         oauthClientScopeRepository.saveAll(
                 req.toScopeEntitySet(client.getId(), oauthScopeProvider)
         );
@@ -43,7 +45,7 @@ public class OauthManageService {
     }
 
     public List<OauthClientResponseDto> getClientList(User user) {
-        List<OauthClient> clientList = oauthFacade.findAllByUser(user);
+        List<OauthClient> clientList = oauthManageFacade.findAllByUser(user);
 
         return clientList.stream()
                 .map(OauthClient::toResponse)
@@ -56,10 +58,8 @@ public class OauthManageService {
 
     @Transactional
     public void updateClient(User user, String clientId, UpdateOauthClientRequest req) {
-        OauthClient client = oauthFacade.findById(clientId);
-        if (!client.getUserCode().equals(user.getCode())) {
-            throw new ForbiddenException("권한이 없습니다");
-        }
+        OauthClient client = oauthManageFacade.findById(clientId);
+        oauthManageFacade.permissionCheck(client, user);
 
         req.updateClient(client);
 
@@ -73,11 +73,17 @@ public class OauthManageService {
 
     @Transactional
     public void deleteClient(User user, String clientId) {
-        OauthClient client = oauthFacade.findById(clientId);
-        if (!client.getUserCode().equals(user.getCode())) {
-            throw new ForbiddenException("권한이 없습니다");
-        }
+        OauthClient client = oauthManageFacade.findById(clientId);
+        oauthManageFacade.permissionCheck(client, user);
 
-        oauthFacade.delete(client);
+        oauthManageFacade.delete(client);
+    }
+
+    public void addRedirectUri(User user, @Valid AddOauthClientRedirectRequest req) {
+        OauthClient client = oauthManageFacade.findById(req.getClientId());
+        oauthManageFacade.permissionCheck(client, user);
+        oauthManageFacade.uriCheck(client.getDomain(), req.getRedirectUri());
+
+        oauthRedirectUriRepository.save(req.toEntity());
     }
 }

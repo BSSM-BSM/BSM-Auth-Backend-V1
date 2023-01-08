@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Component
 @RequiredArgsConstructor
@@ -25,27 +24,6 @@ public class OauthFacade {
     public OauthClient findById(String clientId) {
         return oauthClientRepository.findById(clientId)
                 .orElseThrow(() -> new NotFoundException("클라이언트를 찾을 수 없습니다"));
-    }
-
-    public List<OauthClient> findAllByUser(User user) {
-        return oauthClientRepository.findAllByUserCode(user.getCode());
-    }
-
-    public OauthClient save(OauthClient client) {
-        return oauthClientRepository.save(client);
-    }
-
-    public void delete(OauthClient client) {
-        oauthClientRepository.delete(client);
-    }
-
-    public void uriCheck(String domain, String uri) {
-        if (!Pattern.matches("(https?://)("+domain+")(:(6[0-5]{2}[0-3][0-5]|[1-5][0-9]{4}|[1-9][0-9]{0,3}))?/.*", uri)) {
-            throw new BadRequestException(ImmutableMap.<String, String>builder().
-                    put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
-                    build()
-            );
-        }
     }
 
     public OauthClient checkClient(User user, String clientId, String redirectURI) {
