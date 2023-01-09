@@ -80,7 +80,7 @@ public class CreateOauthClientRequest {
     }
 
     private OauthRedirectUri toRedirectEntity(String clientId, String redirectUri) {
-        return OauthRedirectUri.builder().oauthClientScopePk(
+        return OauthRedirectUri.builder().pk(
                 OauthRedirectUriPk.builder()
                         .clientId(clientId)
                         .redirectUri(redirectUri)

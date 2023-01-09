@@ -34,7 +34,7 @@ public class AddOauthClientRedirectRequest {
     private String redirectUri;
 
     public OauthRedirectUri toEntity() {
-        return OauthRedirectUri.builder().oauthClientScopePk(
+        return OauthRedirectUri.builder().pk(
                 OauthRedirectUriPk.builder()
                         .clientId(clientId)
                         .redirectUri(redirectUri)

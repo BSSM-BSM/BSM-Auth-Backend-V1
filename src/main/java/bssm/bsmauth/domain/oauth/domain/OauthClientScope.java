@@ -12,7 +12,7 @@ public class OauthClientScope {
     @EmbeddedId
     private OauthClientScopePk pk;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "clientId", insertable = false, updatable = false)
     private OauthClient oauthClient;
 

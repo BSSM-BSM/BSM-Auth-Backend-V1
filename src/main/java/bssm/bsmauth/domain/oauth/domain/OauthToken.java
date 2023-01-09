@@ -19,7 +19,7 @@ public class OauthToken extends BaseTimeEntity {
     @Column(length = 8, insertable = false, updatable = false)
     private String clientId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "clientId")
     private OauthClient oauthClient;
 

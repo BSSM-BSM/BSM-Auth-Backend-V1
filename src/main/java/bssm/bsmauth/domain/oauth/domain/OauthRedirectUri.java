@@ -13,19 +13,19 @@ import javax.persistence.*;
 public class OauthRedirectUri {
 
     @EmbeddedId
-    private OauthRedirectUriPk oauthClientScopePk;
+    private OauthRedirectUriPk pk;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "clientId", insertable = false, updatable = false)
     private OauthClient oauthClient;
 
     @Builder
-    public OauthRedirectUri(OauthRedirectUriPk oauthClientScopePk, OauthClient oauthClient) {
-        this.oauthClientScopePk = oauthClientScopePk;
+    public OauthRedirectUri(OauthRedirectUriPk pk, OauthClient oauthClient) {
+        this.pk = pk;
         this.oauthClient = oauthClient;
     }
 
     public String toUriString() {
-        return oauthClientScopePk.getRedirectUri();
+        return pk.getRedirectUri();
     }
 }
