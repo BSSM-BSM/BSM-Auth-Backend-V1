@@ -36,6 +36,21 @@ public class UpdateOauthClientRequest {
 
     @Size(
             min = 1,
+            max = 10,
+            message = "리다이렉트 URI의 갯수는 1 ~ 10개여야 합니다"
+    )
+    private List<
+            @NotBlank
+            @Size(
+                    min = 1,
+                    max = 100,
+                    message = "리다이렉트 URI는 1 ~ 100글자여야 합니다"
+            )
+                    String
+            > redirectUriList;
+
+    @Size(
+            min = 1,
             message = "사용할 정보는 1개 이상이어야 합니다"
     )
     private List<String> scopeList;
@@ -48,6 +63,21 @@ public class UpdateOauthClientRequest {
         client.setDomain(domain);
         client.setServiceName(serviceName);
         client.setAccess(access);
+    }
+
+    public Set<OauthRedirectUri> toRedirectEntitySet(String clientId) {
+        return redirectUriList.stream()
+                .map(redirectUri -> toRedirectEntity(clientId, redirectUri))
+                .collect(Collectors.toSet());
+    }
+
+    private OauthRedirectUri toRedirectEntity(String clientId, String redirectUri) {
+        return OauthRedirectUri.builder().pk(
+                OauthRedirectUriPk.builder()
+                        .clientId(clientId)
+                        .redirectUri(redirectUri)
+                        .build()
+        ).build();
     }
 
     public Set<OauthClientScope> toScopeEntitySet(String clientId, OauthScopeProvider oauthScopeProvider) {

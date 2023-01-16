@@ -28,4 +28,19 @@ public class OauthRedirectUri {
     public String toUriString() {
         return pk.getRedirectUri();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OauthRedirectUri)) return false;
+
+        OauthRedirectUri that = (OauthRedirectUri) o;
+
+        return pk != null ? pk.equals(that.pk) : that.pk == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return pk != null ? pk.hashCode() : 0;
+    }
 }

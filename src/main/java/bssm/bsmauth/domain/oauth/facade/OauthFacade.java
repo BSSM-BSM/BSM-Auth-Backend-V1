@@ -53,7 +53,7 @@ public class OauthFacade {
                 .stream().map(OauthRedirectUri::toUriString)
                 .toList();
 
-        if (uris.contains(redirectURI)) {
+        if (!uris.contains(redirectURI)) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
                     build()

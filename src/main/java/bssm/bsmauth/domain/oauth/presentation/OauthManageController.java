@@ -48,19 +48,4 @@ public class OauthManageController {
         oauthManageService.deleteClient(userUtil.getUser(), clientId);
     }
 
-    @PostMapping("client/{clientId}/redirect")
-    public void addRedirect(
-            @PathVariable String clientId,
-            @RequestPart(value = "redirectUri", required = false) String redirectUri
-    ) {
-        oauthManageService.addRedirectUri(userUtil.getUser(), new AddOauthClientRedirectRequest(clientId, redirectUri));
-    }
-
-    @DeleteMapping("client/{clientId}/redirect")
-    public void removeRedirect(
-            @PathVariable String clientId,
-            @RequestParam String redirectUri
-    ) {
-        oauthManageService.removeRedirectUri(userUtil.getUser(), new RemoveOauthClientRedirectRequest(clientId, redirectUri));
-    }
 }

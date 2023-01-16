@@ -46,6 +46,12 @@ public class OauthClient extends BaseTimeEntity {
     @OneToMany(mappedBy = "oauthClient", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private Set<OauthRedirectUri> redirectUris = new HashSet<>();
 
+    @OneToMany(mappedBy = "oauthClient", cascade = CascadeType.REMOVE)
+    private final Set<OauthAuthCode> oauthAuthCodes = new HashSet<>();
+
+    @OneToMany(mappedBy = "oauthClient", cascade = CascadeType.REMOVE)
+    private final Set<OauthToken> oauthTokens = new HashSet<>();
+
     @Builder
     public OauthClient(String id, String clientSecret, String domain, String serviceName, Long userCode, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
         this.id = id;
