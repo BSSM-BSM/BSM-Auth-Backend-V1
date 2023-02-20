@@ -4,6 +4,7 @@ import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.repository.*;
 import bssm.bsmauth.domain.oauth.facade.OauthFacade;
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.InternalServerException;
 import bssm.bsmauth.global.error.exceptions.NotFoundException;
@@ -26,13 +27,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OauthService {
 
+    private final CurrentUser currentUser;
+    private final OauthFacade oauthFacade;
+    private final OauthScopeProvider oauthScopeProvider;
+
     private final OauthAuthCodeRepository oauthAuthCodeRepository;
     private final OauthTokenRepository oauthTokenRepository;
     private final UserRepository userRepository;
-    private final OauthScopeProvider oauthScopeProvider;
-    private final OauthFacade oauthFacade;
 
-    public OauthAuthenticationResponseDto authentication(User user, String clientId, String redirectURI) {
+    public OauthAuthenticationResponseDto authentication(String clientId, String redirectURI) {
+        User user = currentUser.findCachedUser();
         OauthClient client = oauthFacade.checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
@@ -56,7 +60,8 @@ public class OauthService {
                 .build();
     }
 
-    public OauthAuthorizationResponseDto authorization(User user, OauthAuthorizationRequest dto) {
+    public OauthAuthorizationResponseDto authorization(OauthAuthorizationRequest dto) {
+        User user = currentUser.findCachedUser();
         OauthClient client = oauthFacade.checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()

@@ -15,10 +15,9 @@ import bssm.bsmauth.domain.user.domain.repository.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherSignUpReq;
 import bssm.bsmauth.domain.auth.presentation.dto.res.ResetPwTokenRes;
 import bssm.bsmauth.domain.auth.presentation.dto.res.AuthTokenRes;
-import bssm.bsmauth.domain.user.exception.NoSuchUserException;
+import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
-import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import bssm.bsmauth.global.jwt.JwtProvider;
 import bssm.bsmauth.global.cookie.CookieProvider;
 import bssm.bsmauth.global.utils.SecurityUtil;
@@ -41,6 +40,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final CurrentUser currentUser;
     private final JwtProvider jwtProvider;
     private final CookieProvider cookieProvider;
 
@@ -156,11 +156,10 @@ public class AuthService {
 
 
     @Transactional
-    public void updatePw(User user, UpdatePwReq req) {
+    public void updatePw(UpdatePwReq req) {
         validatePw(req.getNewPw(), req.getCheckNewPw());
-        User newUser = userRepository.findById(user.getCode())
-                .orElseThrow(NoSuchUserException::new);
-        newUser.updatePw(req.getNewPw());
+        User user = currentUser.findUser();
+        user.updatePw(req.getNewPw());
     }
 
     @Transactional

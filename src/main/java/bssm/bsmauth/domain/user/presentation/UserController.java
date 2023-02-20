@@ -3,7 +3,6 @@ package bssm.bsmauth.domain.user.presentation;
 import bssm.bsmauth.domain.user.presentation.dto.res.*;
 import bssm.bsmauth.domain.user.service.UserService;
 import bssm.bsmauth.domain.user.presentation.dto.req.*;
-import bssm.bsmauth.global.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,12 +15,10 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
-    private final CurrentUser currentUser;
 
     @GetMapping
     public UserRes getUserInfo() {
-        return currentUser.getUser()
-                .toUserResponse();
+        return userService.findMyInfo();
     }
 
     @GetMapping("{userCode}")
@@ -30,12 +27,12 @@ public class UserController {
     }
 
     @PutMapping("nickname")
-    public void updateNickname(@Valid @RequestBody UpdateNicknameReq dto) {
-        userService.updateNickname(currentUser.getUser(), dto);
+    public void updateNickname(@Valid @RequestBody UpdateNicknameReq req) {
+        userService.updateNickname(req);
     }
 
     @PostMapping("profile")
     public void uploadProfile(@RequestParam MultipartFile file) {
-        userService.uploadProfile(currentUser.getUser(), file);
+        userService.uploadProfile(file);
     }
 }

@@ -21,12 +21,12 @@ public class OauthManageController {
 
     @PostMapping("client")
     public void createClient(@Valid @RequestBody CreateOauthClientRequest dto) {
-        oauthManageService.createClient(currentUser.getUser(), dto);
+        oauthManageService.createClient(currentUser.findCachedUser(), dto);
     }
 
     @GetMapping("client")
     public List<OauthClientResponseDto> getClientList() {
-        return oauthManageService.getClientList(currentUser.getUser());
+        return oauthManageService.getClientList(currentUser.findCachedUser());
     }
 
     @GetMapping("scopes")
@@ -39,12 +39,12 @@ public class OauthManageController {
             @PathVariable String clientId,
             @Valid @RequestBody UpdateOauthClientRequest req
     ) {
-        oauthManageService.updateClient(currentUser.getUser(), clientId, req);
+        oauthManageService.updateClient(currentUser.findCachedUser(), clientId, req);
     }
 
     @DeleteMapping("client/{clientId}")
     public void deleteClient(@PathVariable String clientId) {
-        oauthManageService.deleteClient(currentUser.getUser(), clientId);
+        oauthManageService.deleteClient(currentUser.findCachedUser(), clientId);
     }
 
 }

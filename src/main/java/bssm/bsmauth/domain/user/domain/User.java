@@ -26,6 +26,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 20, unique = true)
     private String nickname;
 
+    @Column
+    private String profileUrl;
+
     @Column(nullable = false, length = 12)
     @Enumerated(EnumType.STRING)
     private UserRole role;
@@ -79,6 +82,10 @@ public class User extends BaseTimeEntity {
 
     public void updateNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void updateProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
     }
 
     public UserRes toUserResponse() {
