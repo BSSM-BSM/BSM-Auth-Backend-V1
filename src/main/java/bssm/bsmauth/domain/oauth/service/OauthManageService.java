@@ -4,9 +4,9 @@ import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.repository.OauthClientScopeRepository;
 import bssm.bsmauth.domain.oauth.domain.repository.OauthRedirectUriRepository;
 import bssm.bsmauth.domain.oauth.facade.OauthManageFacade;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.CreateOauthClientRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.UpdateOauthClientRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.CreateOauthClientReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.UpdateOauthClientReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.res.*;
 import bssm.bsmauth.domain.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class OauthManageService {
     private final OauthManageFacade oauthManageFacade;
 
     @Transactional
-    public void createClient(User user, CreateOauthClientRequest req) {
+    public void createClient(User user, CreateOauthClientReq req) {
         req.getRedirectUriList()
                 .forEach(uri -> oauthManageFacade.uriCheck(req.getDomain(), uri));
 
@@ -43,7 +43,7 @@ public class OauthManageService {
         );
     }
 
-    public List<OauthClientResponseDto> getClientList(User user) {
+    public List<OauthClientRes> getClientList(User user) {
         List<OauthClient> clientList = oauthManageFacade.findAllByUser(user);
 
         return clientList.stream()
@@ -56,7 +56,7 @@ public class OauthManageService {
     }
 
     @Transactional
-    public void updateClient(User user, String clientId, UpdateOauthClientRequest req) {
+    public void updateClient(User user, String clientId, UpdateOauthClientReq req) {
         OauthClient client = oauthManageFacade.findById(clientId);
         oauthManageFacade.permissionCheck(client, user);
         req.getRedirectUriList()
@@ -75,7 +75,7 @@ public class OauthManageService {
         oauthManageFacade.delete(client);
     }
 
-    private void updateRedirect(OauthClient client, UpdateOauthClientRequest req) {
+    private void updateRedirect(OauthClient client, UpdateOauthClientReq req) {
         Set<OauthRedirectUri> newRedirectSet = req.toRedirectEntitySet(client.getId());
         Set<OauthRedirectUri> deleteRedirectSet = client.getRedirectUris();
         newRedirectSet.forEach(deleteRedirectSet::remove);
@@ -84,7 +84,7 @@ public class OauthManageService {
         oauthRedirectUriRepository.saveAll(newRedirectSet);
     }
 
-    private void updateScope(OauthClient client, UpdateOauthClientRequest req) {
+    private void updateScope(OauthClient client, UpdateOauthClientReq req) {
         Set<OauthClientScope> newScopeSet = req.toScopeEntitySet(client.getId(), oauthScopeProvider);
         Set<OauthClientScope> deleteScopeSet = client.getScopes();
         newScopeSet.forEach(deleteScopeSet::remove);

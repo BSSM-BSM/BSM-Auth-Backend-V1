@@ -1,8 +1,8 @@
 package bssm.bsmauth.domain.oauth.presentation;
 
 import bssm.bsmauth.domain.oauth.domain.OauthScope;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.*;
-import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.*;
+import bssm.bsmauth.domain.oauth.presentation.dto.res.*;
 import bssm.bsmauth.domain.oauth.service.OauthManageService;
 import bssm.bsmauth.global.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +20,12 @@ public class OauthManageController {
     private final OauthManageService oauthManageService;
 
     @PostMapping("client")
-    public void createClient(@Valid @RequestBody CreateOauthClientRequest dto) {
+    public void createClient(@Valid @RequestBody CreateOauthClientReq dto) {
         oauthManageService.createClient(currentUser.findCachedUser(), dto);
     }
 
     @GetMapping("client")
-    public List<OauthClientResponseDto> getClientList() {
+    public List<OauthClientRes> getClientList() {
         return oauthManageService.getClientList(currentUser.findCachedUser());
     }
 
@@ -37,7 +37,7 @@ public class OauthManageController {
     @PutMapping("client/{clientId}")
     public void updateClient(
             @PathVariable String clientId,
-            @Valid @RequestBody UpdateOauthClientRequest req
+            @Valid @RequestBody UpdateOauthClientReq req
     ) {
         oauthManageService.updateClient(currentUser.findCachedUser(), clientId, req);
     }

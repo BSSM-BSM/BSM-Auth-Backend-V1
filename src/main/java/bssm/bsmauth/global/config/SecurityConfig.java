@@ -31,8 +31,8 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .antMatchers("/user/pw/token")
-                .antMatchers(HttpMethod.POST, "/user/student", "/user/teacher", "/user/login", "/user/pw/token", "/user/mail/**")
+                .antMatchers("/auth/pw/token")
+                .antMatchers(HttpMethod.POST, "/auth/student", "/auth/teacher", "/auth/login", "/auth/pw/token", "/auth/mail/**")
                 .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource");
     }
 

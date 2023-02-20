@@ -1,17 +1,19 @@
 package bssm.bsmauth.domain.oauth.service;
 
+import bssm.bsmauth.domain.auth.exception.NoSuchTokenException;
 import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.repository.*;
 import bssm.bsmauth.domain.oauth.facade.OauthFacade;
-import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.domain.oauth.presentation.dto.res.*;
+import bssm.bsmauth.domain.user.exception.NoSuchUserException;
 import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.InternalServerException;
 import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.presentation.dto.OauthUserDto;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthAuthorizationReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetResourceReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetTokenReq;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
 import bssm.bsmauth.global.utils.SecurityUtil;
@@ -35,13 +37,13 @@ public class OauthService {
     private final OauthTokenRepository oauthTokenRepository;
     private final UserRepository userRepository;
 
-    public OauthAuthenticationResponseDto authentication(String clientId, String redirectURI) {
+    public OauthAuthenticationRes authentication(String clientId, String redirectURI) {
         User user = currentUser.findCachedUser();
         OauthClient client = oauthFacade.checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
         if (oauthTokenRepository.findByUserCodeAndClientId(user.getCode(), clientId).isPresent()) {
-            return OauthAuthenticationResponseDto.builder()
+            return OauthAuthenticationRes.builder()
                     .authorized(true)
                     .domain(client.getDomain())
                     .serviceName(client.getServiceName())
@@ -52,7 +54,7 @@ public class OauthService {
         client.getScopes()
                 .forEach(scope -> scopeList.add(oauthScopeProvider.getScope(scope.getOauthScope().getId())));
 
-        return OauthAuthenticationResponseDto.builder()
+        return OauthAuthenticationRes.builder()
                 .authorized(false)
                 .domain(client.getDomain())
                 .serviceName(client.getServiceName())
@@ -60,9 +62,9 @@ public class OauthService {
                 .build();
     }
 
-    public OauthAuthorizationResponseDto authorization(OauthAuthorizationRequest dto) {
+    public OauthAuthorizationRes authorization(OauthAuthorizationReq req) {
         User user = currentUser.findCachedUser();
-        OauthClient client = oauthFacade.checkClient(user, dto.getClientId(), dto.getRedirectURI());
+        OauthClient client = oauthFacade.checkClient(user, req.getClientId(), req.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(SecurityUtil.getRandomString(32))
@@ -71,29 +73,29 @@ public class OauthService {
                 .build();
         oauthAuthCodeRepository.save(authCode);
 
-        return OauthAuthorizationResponseDto.builder()
-                .redirectURI(dto.getRedirectURI() + "?code=" + authCode.getCode())
+        return OauthAuthorizationRes.builder()
+                .redirectURI(req.getRedirectURI() + "?code=" + authCode.getCode())
                 .build();
     }
 
-    public OauthTokenResponseDto getToken(OauthGetTokenRequest dto) {
-        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(dto.getAuthCode(), false).orElseThrow(
+    public OauthTokenRes getToken(OauthGetTokenReq req) {
+        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(req.getAuthCode(), false).orElseThrow(
                 () -> {throw new NotFoundException("인증 코드를 찾을 수 없습니다");}
         );
         OauthClient client = authCode.getOauthClient();
-        if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
+        if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("client", "클라이언트 정보가 잘못되었습니다").
                     build()
             );
         }
 
-        authCode.setExpire(true);
+        authCode.expire();
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUserCodeAndClientId(authCode.getUserCode(), dto.getClientId());
+        Optional<OauthToken> token = oauthTokenRepository.findByUserCodeAndClientId(authCode.getUserCode(), req.getClientId());
         if (token.isPresent()) {
-            return OauthTokenResponseDto.builder()
+            return OauthTokenRes.builder()
                     .token(token.get().getToken())
                     .build();
         }
@@ -105,16 +107,16 @@ public class OauthService {
                 .build();
         oauthTokenRepository.save(newToken);
 
-        return OauthTokenResponseDto.builder()
+        return OauthTokenRes.builder()
                 .token(newToken.getToken())
                 .build();
     }
 
-    public OauthResourceResponseDto getResource(OauthGetResourceRequest dto) {
-        OauthToken token = oauthTokenRepository.findByTokenAndExpire(dto.getToken(), false)
-                .orElseThrow(() -> new NotFoundException("토큰을 찾을 수 없습니다"));
+    public OauthResourceRes getResource(OauthGetResourceReq req) {
+        OauthToken token = oauthTokenRepository.findByTokenAndExpire(req.getToken(), false)
+                .orElseThrow(NoSuchTokenException::new);
         OauthClient client = token.getOauthClient();
-        if ( !(client.getId().equals(dto.getClientId()) && client.getClientSecret().equals(dto.getClientSecret())) ) {
+        if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("client", "클라이언트 정보가 잘못되었습니다").
                     build()
@@ -122,13 +124,16 @@ public class OauthService {
         }
 
         User user = userRepository.findById(token.getUserCode())
-                .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다"));
+                .orElseThrow(NoSuchUserException::new);
 
         List<String> scopeList = new ArrayList<>();
         client.getScopes()
                 .forEach(scope -> scopeList.add(scope.getOauthScope().getId()));
 
         OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
+        oauthUserDto.role(user.getRole());
+        oauthUserDto.profileUrl(user.getProfileUrl());
+
         scopeList.forEach(scope -> {
             switch (user.getRole()) {
                 case STUDENT -> {
@@ -155,12 +160,6 @@ public class OauthService {
             }
         });
 
-        return OauthResourceResponseDto.builder()
-                .scopeList(scopeList)
-                .user(oauthUserDto
-                        .role(user.getRole())
-                        .build()
-                )
-                .build();
+        return OauthResourceRes.create(oauthUserDto.build(), scopeList);
     }
 }

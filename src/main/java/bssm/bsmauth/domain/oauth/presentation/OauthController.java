@@ -1,10 +1,10 @@
 package bssm.bsmauth.domain.oauth.presentation;
 
-import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
+import bssm.bsmauth.domain.oauth.presentation.dto.res.*;
 import bssm.bsmauth.domain.oauth.service.OauthService;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
-import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthAuthorizationReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetResourceReq;
+import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetTokenReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ public class OauthController {
     private final OauthService oauthService;
 
     @GetMapping("authenticate")
-    public OauthAuthenticationResponseDto authentication(
+    public OauthAuthenticationRes authentication(
             @RequestParam String clientId,
             @RequestParam String redirectURI
     ) {
@@ -26,18 +26,18 @@ public class OauthController {
     }
 
     @PostMapping("authorize")
-    public OauthAuthorizationResponseDto authorization(@Valid @RequestBody OauthAuthorizationRequest dto) {
-        return oauthService.authorization(dto);
+    public OauthAuthorizationRes authorization(@Valid @RequestBody OauthAuthorizationReq req) {
+        return oauthService.authorization(req);
     }
 
     @PostMapping("token")
-    public OauthTokenResponseDto getToken(@RequestBody OauthGetTokenRequest dto) {
-        return oauthService.getToken(dto);
+    public OauthTokenRes getToken(@RequestBody OauthGetTokenReq req) {
+        return oauthService.getToken(req);
     }
 
     @PostMapping("resource")
-    public OauthResourceResponseDto getResource(@RequestBody OauthGetResourceRequest dto) {
-        return oauthService.getResource(dto);
+    public OauthResourceRes getResource(@RequestBody OauthGetResourceReq req) {
+        return oauthService.getResource(req);
     }
 
 }

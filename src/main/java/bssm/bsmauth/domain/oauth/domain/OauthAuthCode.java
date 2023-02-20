@@ -44,7 +44,7 @@ public class OauthAuthCode extends BaseTimeEntity {
         this.user = user;
     }
 
-    public void setExpire(boolean expire) {
-        this.expire = expire;
+    public void expire() {
+        this.expire = true;
     }
 }

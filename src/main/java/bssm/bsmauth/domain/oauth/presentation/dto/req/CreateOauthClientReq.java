@@ -1,4 +1,4 @@
-package bssm.bsmauth.domain.oauth.presentation.dto.request;
+package bssm.bsmauth.domain.oauth.presentation.dto.req;
 
 import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
@@ -6,7 +6,6 @@ import bssm.bsmauth.domain.oauth.service.OauthScopeProvider;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,8 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
-@NoArgsConstructor
-public class CreateOauthClientRequest {
+public class CreateOauthClientReq {
 
     @Size(min = 1, max = 63)
     @Pattern(

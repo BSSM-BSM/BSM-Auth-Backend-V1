@@ -1,4 +1,4 @@
-package bssm.bsmauth.domain.oauth.presentation.dto.response;
+package bssm.bsmauth.domain.oauth.presentation.dto.res;
 
 import bssm.bsmauth.domain.oauth.domain.OauthScope;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class OauthAuthenticationResponseDto {
+public class OauthAuthenticationRes {
 
     private boolean authorized;
     private String domain;

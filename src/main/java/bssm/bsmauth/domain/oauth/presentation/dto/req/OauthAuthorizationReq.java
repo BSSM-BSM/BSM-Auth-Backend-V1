@@ -1,14 +1,12 @@
-package bssm.bsmauth.domain.oauth.presentation.dto.request;
+package bssm.bsmauth.domain.oauth.presentation.dto.req;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 @Getter
-@NoArgsConstructor
-public class OauthClientRequest {
+public class OauthAuthorizationReq {
 
     @NotBlank
     @Size(
@@ -20,9 +18,9 @@ public class OauthClientRequest {
 
     @NotBlank
     @Size(
-            min = 32,
-            max = 32,
-            message = "clientSecret은 32글자여야 합니다"
+            min = 1,
+            max = 100,
+            message = "redirectURI는 1 ~ 100글자여야 합니다"
     )
-    private String clientSecret;
+    private String redirectURI;
 }
