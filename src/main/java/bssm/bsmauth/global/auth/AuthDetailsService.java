@@ -16,10 +16,9 @@ public class AuthDetailsService implements UserDetailsService {
     private final UserFacade userFacade;
 
     @Override
-    public UserDetails loadUserByUsername(String userCode) throws UsernameNotFoundException {
-        return new AuthDetails(
-                userFacade.getCachedUserByCode(Long.parseLong(userCode))
-        );
+    public UserDetails loadUserByUsername(String authenticationName) throws UsernameNotFoundException {
+        long userCode = Long.parseLong(authenticationName);
+        return new AuthDetails(userFacade.findCachedUserByCode(userCode));
     }
 
 }

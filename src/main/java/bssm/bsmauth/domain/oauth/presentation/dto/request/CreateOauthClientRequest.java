@@ -4,6 +4,7 @@ import bssm.bsmauth.domain.oauth.domain.*;
 import bssm.bsmauth.domain.oauth.domain.type.OauthAccessType;
 import bssm.bsmauth.domain.oauth.service.OauthScopeProvider;
 import bssm.bsmauth.domain.user.domain.User;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,8 +15,6 @@ import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static bssm.bsmauth.global.utils.Util.getRandomStr;
 
 @Getter
 @NoArgsConstructor
@@ -61,11 +60,11 @@ public class CreateOauthClientRequest {
     private OauthAccessType access;
 
     public OauthClient toEntity(User user) {
-        String clientId = getRandomStr(8);
+        String clientId = SecurityUtil.getRandomString(8);
 
         return OauthClient.builder()
                 .id(clientId)
-                .clientSecret(getRandomStr(32))
+                .clientSecret(SecurityUtil.getRandomString(32))
                 .domain(domain)
                 .serviceName(serviceName)
                 .userCode(user.getCode())

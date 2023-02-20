@@ -4,9 +4,11 @@ import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.global.auth.AuthDetailsService;
 import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
-import bssm.bsmauth.global.utils.CookieUtil;
+import bssm.bsmauth.global.cookie.CookieProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,7 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserFacade userFacade;
     private final JwtProvider jwtUtil;
-    private final CookieUtil cookieUtil;
+    private final CookieProvider cookieProvider;
     private final AuthDetailsService authDetailsService;
 
     @Value("${env.cookie.name.token}")
@@ -53,34 +55,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void accessTokenCheck(HttpServletRequest req) {
-        Cookie tokenCookie = cookieUtil.getCookie(req, TOKEN_COOKIE_NAME);
+        Cookie tokenCookie = cookieProvider.findCookie(req, TOKEN_COOKIE_NAME);
         String token = tokenCookie.getValue();
         authentication(token);
     }
 
     private void refreshTokenCheck(HttpServletRequest req, HttpServletResponse res) {
-        Cookie refreshTokenCookie = cookieUtil.getCookie(req, REFRESH_TOKEN_COOKIE_NAME);
+        Cookie refreshTokenCookie = cookieProvider.findCookie(req, REFRESH_TOKEN_COOKIE_NAME);
         // 엑세스 토큰 인증에 실패했으면서 리프레시 토큰도 없으면 인증 실패
         if (refreshTokenCookie == null) {
-            res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
+            res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(TOKEN_COOKIE_NAME, "", 0).toString());
             return;
         }
         try {
             String refreshToken = jwtUtil.getRefreshToken(refreshTokenCookie.getValue());
             // DB에서 사용할 수 있는지 확인
-            User user = userFacade.getByAvailableRefreshToken(refreshToken);
+            User user = userFacade.findByRefreshToken(refreshToken);
 
             // 새 엑세스 토큰 발급
             String newToken = jwtUtil.createAccessToken(user);
             // 쿠키 생성 및 적용
-            Cookie newTokenCookie = cookieUtil.createCookie(TOKEN_COOKIE_NAME, newToken, JWT_TOKEN_MAX_TIME);
-            res.addCookie(newTokenCookie);
+            ResponseCookie newTokenCookie = cookieProvider.createCookie(TOKEN_COOKIE_NAME, newToken, JWT_TOKEN_MAX_TIME);
+            res.addHeader(HttpHeaders.SET_COOKIE, newTokenCookie.toString());
 
             authentication(newToken);
         } catch (Exception e) {
             e.printStackTrace();
-            res.addCookie(cookieUtil.createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0));
-            res.addCookie(cookieUtil.createCookie(TOKEN_COOKIE_NAME, "", 0));
+            res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(REFRESH_TOKEN_COOKIE_NAME, "", 0).toString());
+            res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(TOKEN_COOKIE_NAME, "", 0).toString());
             throw new UnAuthorizedException("다시 로그인 해주세요");
         }
     }

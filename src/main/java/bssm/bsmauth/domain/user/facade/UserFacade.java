@@ -1,9 +1,11 @@
 package bssm.bsmauth.domain.user.facade;
 
 import bssm.bsmauth.domain.user.domain.User;
+import bssm.bsmauth.domain.user.domain.UserCache;
 import bssm.bsmauth.domain.user.domain.repository.RedisUserRepository;
-import bssm.bsmauth.domain.user.domain.repository.RefreshTokenRepository;
-import bssm.bsmauth.domain.user.presentation.dto.response.UserResponse;
+import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
+import bssm.bsmauth.domain.user.domain.repository.UserRepository;
+import bssm.bsmauth.domain.user.exception.NoSuchUserException;
 import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,24 +14,35 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserFacade {
 
+    private final UserRepository userRepository;
     private final RedisUserRepository userRedisRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public User getByAvailableRefreshToken(String refreshToken) {
+    public User findByRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByTokenAndIsAvailable(refreshToken, true)
                 .orElseThrow(() -> new NotFoundException("토큰을 찾을 수 없습니다"))
                 .getUser();
     }
 
-    public User getCachedUserByCode(long userCode) {
+    public User findByCode(long userCode) {
+        return userRepository.findById(userCode)
+                .orElseThrow(NoSuchUserException::new);
+    }
+
+    public User findCachedUserByCode(long userCode) {
         return userRedisRepository.findById(userCode)
-                .orElseThrow(NotFoundException::new)
+                .orElseGet(() -> findAndSaveUserCache(userCode))
                 .toUser();
     }
 
-    public void saveCacheUser(User user) {
-        System.out.println("user = " + user.getCode());
-        userRedisRepository.save(user.toUserRedis());
+    public void saveUserCache(User user) {
+        userRedisRepository.save(user.toUserCache());
+    }
+
+    private UserCache findAndSaveUserCache(long userCode) {
+        User user = findByCode(userCode);
+        saveUserCache(user);
+        return user.toUserCache();
     }
 
 }

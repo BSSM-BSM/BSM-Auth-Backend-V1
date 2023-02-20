@@ -1,8 +1,8 @@
 package bssm.bsmauth.global.jwt;
 
-import bssm.bsmauth.domain.user.domain.RefreshToken;
+import bssm.bsmauth.domain.auth.domain.RefreshToken;
 import bssm.bsmauth.domain.user.domain.User;
-import bssm.bsmauth.domain.user.domain.repository.RefreshTokenRepository;
+import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -32,7 +32,7 @@ public class JwtProvider {
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     public String createAccessToken(User user) {
-        userFacade.saveCacheUser(user);
+        userFacade.saveUserCache(user);
 
         Claims claims = Jwts.claims();
         claims.put("code", user.getCode());

@@ -1,8 +1,7 @@
 package bssm.bsmauth.domain.user.domain;
 
-import bssm.bsmauth.domain.user.presentation.dto.response.teacher.TeacherInfoResponse;
+import bssm.bsmauth.domain.user.presentation.dto.res.teacher.TeacherRes;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,15 +22,15 @@ public class Teacher {
     @Column(length = 32)
     private String email;
 
-    @Builder
-    public Teacher(Long teacherId, String name, String email) {
-        this.teacherId = teacherId;
-        this.name = name;
-        this.email = email;
+    public static Teacher create(String name, String email) {
+        Teacher teacher = new Teacher();
+        teacher.name = name;
+        teacher.email = email;
+        return teacher;
     }
 
-    public TeacherInfoResponse toInfo() {
-        return TeacherInfoResponse.builder()
+    public TeacherRes toInfo() {
+        return TeacherRes.builder()
                 .name(name)
                 .build();
     }

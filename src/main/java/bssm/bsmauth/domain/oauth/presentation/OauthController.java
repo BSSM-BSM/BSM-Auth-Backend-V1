@@ -2,10 +2,10 @@ package bssm.bsmauth.domain.oauth.presentation;
 
 import bssm.bsmauth.domain.oauth.presentation.dto.response.*;
 import bssm.bsmauth.domain.oauth.service.OauthService;
-import bssm.bsmauth.global.utils.UserUtil;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthAuthorizationRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceRequest;
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
+import bssm.bsmauth.global.auth.CurrentUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +16,7 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class OauthController {
 
-    private final UserUtil userUtil;
+    private final CurrentUser currentUser;
     private final OauthService oauthService;
 
     @GetMapping("authenticate")
@@ -24,12 +24,12 @@ public class OauthController {
             @RequestParam String clientId,
             @RequestParam String redirectURI
     ) {
-        return oauthService.authentication(userUtil.getUser(), clientId, redirectURI);
+        return oauthService.authentication(currentUser.getUser(), clientId, redirectURI);
     }
 
     @PostMapping("authorize")
     public OauthAuthorizationResponseDto authorization(@Valid @RequestBody OauthAuthorizationRequest dto) {
-        return oauthService.authorization(userUtil.getUser(), dto);
+        return oauthService.authorization(currentUser.getUser(), dto);
     }
 
     @PostMapping("token")

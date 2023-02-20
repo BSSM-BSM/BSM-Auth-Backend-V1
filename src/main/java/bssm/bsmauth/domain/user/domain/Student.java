@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.user.domain;
 
-import bssm.bsmauth.domain.user.presentation.dto.response.student.StudentInfoResponse;
+import bssm.bsmauth.domain.user.presentation.dto.res.student.StudentRes;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -40,8 +40,8 @@ public class Student {
     @Column(length = 32)
     private String email;
 
-    public void setCodeAvailable(boolean codeAvailable) {
-        this.codeAvailable = codeAvailable;
+    public void expireAuthCode() {
+        this.codeAvailable = false;
     }
 
     @Builder
@@ -57,8 +57,8 @@ public class Student {
         this.email = email;
     }
 
-    public StudentInfoResponse toInfo() {
-        return StudentInfoResponse.builder()
+    public StudentRes toInfo() {
+        return StudentRes.builder()
                 .name(name)
                 .enrolledAt(enrolledAt)
                 .grade(grade)

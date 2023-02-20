@@ -1,0 +1,14 @@
+package bssm.bsmauth.domain.auth.presentation.dto.req.teacher;
+
+import lombok.Getter;
+
+import javax.validation.constraints.Email;
+
+@Getter
+public class TeacherAuthCodeMailReq {
+
+    @Email(
+            message = "올바른 선생님 이메일 주소가 아닙니다"
+    )
+    private String email;
+}

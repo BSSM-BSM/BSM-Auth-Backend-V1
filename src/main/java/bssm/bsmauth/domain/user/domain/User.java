@@ -1,8 +1,11 @@
 package bssm.bsmauth.domain.user.domain;
 
-import bssm.bsmauth.domain.user.presentation.dto.response.OtherUserResponse;
-import bssm.bsmauth.domain.user.presentation.dto.response.UserResponse;
+import bssm.bsmauth.domain.user.exception.NoSuchUserEmailException;
+import bssm.bsmauth.domain.user.exception.NoSuchUserNameException;
+import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;
+import bssm.bsmauth.domain.user.presentation.dto.res.UserRes;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 
 import javax.persistence.*;
@@ -47,34 +50,39 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 64)
     private String pwSalt;
 
-    @Builder
-    public User(Long code, String id, String nickname, UserRole role, String studentId, Student student, Long teacherId, Teacher teacher, String pw, String pwSalt) {
-        this.code = code;
-        this.id = id;
-        this.nickname = nickname;
-        this.role = role;
-        this.studentId = studentId;
-        this.student = student;
-        this.teacherId = teacherId;
-        this.teacher = teacher;
-        this.pw = pw;
+    public String findEmailOrNull() {
+        if (this.role == UserRole.STUDENT) {
+            return this.student.getEmail();
+        }
+        if (this.role == UserRole.TEACHER) {
+            return this.teacher.getEmail();
+        }
+        throw new NoSuchUserEmailException();
+    }
+
+    public String findNameOrNull() {
+        if (this.role == UserRole.STUDENT) {
+            return this.student.getName();
+        }
+        if (this.role == UserRole.TEACHER) {
+            return this.teacher.getName();
+        }
+        throw new NoSuchUserNameException();
+    }
+
+    public void updatePw(String pw) {
+        // 비밀번호 솔트 값 생성
+        String pwSalt = SecurityUtil.getRandomString(64);
+        this.pw = SecurityUtil.encryptPw(pwSalt, pw);
         this.pwSalt = pwSalt;
     }
 
-    public void setPw(String pw) {
-        this.pw = pw;
-    }
-
-    public void setPwSalt(String salt) {
-        this.pwSalt = salt;
-    }
-
-    public void setNickname(String nickname) {
+    public void updateNickname(String nickname) {
         this.nickname = nickname;
     }
 
-    public UserResponse toUserResponse() {
-        UserResponse.UserResponseBuilder builder = UserResponse.builder()
+    public UserRes toUserResponse() {
+        UserRes.UserResBuilder builder = UserRes.builder()
                 .code(code)
                 .role(role)
                 .nickname(nickname)
@@ -92,9 +100,9 @@ public class User extends BaseTimeEntity {
         ).build();
     }
 
-    public OtherUserResponse toOtherUserResponse() {
-        UserResponse user = this.toUserResponse();
-        return OtherUserResponse.builder()
+    public OtherUserRes toOtherUserResponse() {
+        UserRes user = this.toUserResponse();
+        return OtherUserRes.builder()
                 .code(user.getCode())
                 .role(user.getRole())
                 .nickname(user.getNickname())
@@ -104,16 +112,45 @@ public class User extends BaseTimeEntity {
                 .build();
     }
 
-    public UserRedis toUserRedis() {
-        return UserRedis.builder()
-                .code(code)
-                .nickname(nickname)
-                .role(role)
-                .studentId(studentId)
-                .student(student)
-                .teacherId(teacherId)
-                .teacher(teacher)
-                .build();
+    public UserCache toUserCache() {
+        return UserCache.create(this);
+    }
+
+    public static User create(UserCache userCache) {
+        User user = new User();
+        user.code = userCache.getCode();
+        user.id = userCache.getId();
+        user.nickname = userCache.getNickname();
+        user.role = userCache.getRole();
+        user.studentId = userCache.getStudentId();
+        user.student = userCache.getStudent();
+        user.teacherId = userCache.getTeacherId();
+        user.teacher = userCache.getTeacher();
+        return user;
+    }
+
+    private static User createUser(String id, String pw, String nickname) {
+        User user = new User();
+        user.id = id;
+        user.updatePw(pw);
+        user.updateNickname(nickname);
+        return user;
+    }
+
+    public static User createStudent(Student student, String id, String pw, String nickname) {
+        User user = createUser(id, pw, nickname);
+        user.student = student;
+        user.studentId = student.getStudentId();
+        user.role = UserRole.STUDENT;
+        return user;
+    }
+
+    public static User createTeacher(Teacher teacher, String id, String pw, String nickname) {
+        User user = createUser(id, pw, nickname);
+        user.teacher = teacher;
+        user.teacherId = teacher.getTeacherId();
+        user.role = UserRole.TEACHER;
+        return user;
     }
 
 }

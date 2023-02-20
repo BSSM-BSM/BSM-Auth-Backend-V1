@@ -13,6 +13,7 @@ import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetResourceReques
 import bssm.bsmauth.domain.oauth.presentation.dto.request.OauthGetTokenRequest;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import static bssm.bsmauth.global.utils.Util.getRandomStr;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +60,7 @@ public class OauthService {
         OauthClient client = oauthFacade.checkClient(user, dto.getClientId(), dto.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
-                .code(getRandomStr(32))
+                .code(SecurityUtil.getRandomString(32))
                 .userCode(user.getCode())
                 .oauthClient(client)
                 .build();
@@ -95,7 +94,7 @@ public class OauthService {
         }
 
         OauthToken newToken = OauthToken.builder()
-                .token(getRandomStr(32))
+                .token(SecurityUtil.getRandomString(32))
                 .userCode(authCode.getUserCode())
                 .oauthClient(client)
                 .build();
