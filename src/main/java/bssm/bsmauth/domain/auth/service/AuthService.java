@@ -83,7 +83,7 @@ public class AuthService {
         }
         validateSignUp(req);
 
-        Teacher teacher = teacherRepository.save(Teacher.create(teacherAuthCode.getEmail(), req.getName()));
+        Teacher teacher = teacherRepository.save(Teacher.create(req.getName(), teacherAuthCode.getEmail()));
         User user = User.createTeacher(teacher, req.getId(), req.getPw(), req.getNickname());
         teacherAuthCode.expire();
         userRepository.save(user);

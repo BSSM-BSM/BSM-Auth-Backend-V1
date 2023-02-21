@@ -2,13 +2,11 @@ package bssm.bsmauth.domain.user.domain;
 
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
-import javax.persistence.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,11 +25,11 @@ public class UserCache extends BaseTimeEntity {
 
     public static UserCache create(User user) {
         UserCache userCache = new UserCache();
-        userCache.code = userCache.getCode();
+        userCache.code = user.getCode();
         userCache.id = user.getId();
-        userCache.nickname = userCache.getNickname();
+        userCache.nickname = user.getNickname();
         userCache.role = user.getRole();
-        userCache.studentId = userCache.getStudentId();
+        userCache.studentId = user.getStudentId();
         userCache.student = user.getStudent();
         userCache.teacherId = user.getTeacherId();
         userCache.teacher = user.getTeacher();

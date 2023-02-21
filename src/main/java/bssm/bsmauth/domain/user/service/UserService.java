@@ -40,12 +40,12 @@ public class UserService {
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
     public UserRes findMyInfo() {
-        return currentUser.findCachedUser()
+        return currentUser.findUser()
                 .toUserResponse();
     }
 
     public OtherUserRes getOtherUserInfo(long userCode) {
-        return userFacade.findCachedUserByCode(userCode)
+        return userFacade.findByCode(userCode)
                 .toOtherUserResponse();
     }
 

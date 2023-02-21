@@ -49,7 +49,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void authentication(String token) {
-        UserDetails userDetails = authDetailsService.loadUserByUsername(String.valueOf(jwtUtil.getUserCode(token)));
+        Long userCode = jwtUtil.getUserCode(token);
+        UserDetails userDetails = authDetailsService.loadUserByUsername(String.valueOf(userCode));
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
@@ -62,8 +63,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void refreshTokenCheck(HttpServletRequest req, HttpServletResponse res) {
         Cookie refreshTokenCookie = cookieProvider.findCookie(req, REFRESH_TOKEN_COOKIE_NAME);
-        System.out.println("test");
-        System.out.println(refreshTokenCookie);
         // 엑세스 토큰 인증에 실패했으면서 리프레시 토큰도 없으면 인증 실패
         if (refreshTokenCookie == null) {
             res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(TOKEN_COOKIE_NAME, "", 0).toString());
