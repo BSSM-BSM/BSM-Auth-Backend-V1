@@ -37,6 +37,7 @@ public class MailConfig {
         properties.put("mail.transport.protocol", protocol);
         properties.put("mail.smtp.auth", auth);
         properties.put("mail.smtp.starttls.enable", starttls);
+        properties.put("mail.smtp.localhost", "localhost");
 
         mailSender.setHost(host);
         mailSender.setPort(port);
