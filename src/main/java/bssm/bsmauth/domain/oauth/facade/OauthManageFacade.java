@@ -43,7 +43,7 @@ public class OauthManageFacade {
     }
 
     public void uriCheck(String domain, String uri) {
-        if (!Pattern.matches("(https?://)("+domain+")(:(6[0-5]{2}[0-3][0-5]|[1-5][0-9]{4}|[1-9][0-9]{0,3}))?/.*", uri)) {
+        if (!Pattern.matches("(https?://)("+domain+"|localhost)(:(6[0-5]{2}[0-3][0-5]|[1-5][0-9]{4}|[1-9][0-9]{0,3}))?/.*", uri)) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("redirectURI", "리다이렉트 주소가 올바르지 않습니다").
                     build()
