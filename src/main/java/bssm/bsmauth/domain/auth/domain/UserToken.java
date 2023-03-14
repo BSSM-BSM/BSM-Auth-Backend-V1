@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.auth.domain;
 
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -30,10 +31,35 @@ public class UserToken extends BaseTimeEntity {
     private UserTokenType type;
 
     @ManyToOne
-    @JoinColumn(name = "usercode", insertable = false, updatable = false)
+    @JoinColumn(name = "user_code")
     private User user;
 
     public void expire() {
         this.used = true;
     }
+
+    public static UserToken ofResetPw(User user) {
+        UserToken userToken = new UserToken();
+        userToken.token = SecurityUtil.getRandomString(32);
+        userToken.user = user;
+        userToken.used = false;
+        userToken.type = UserTokenType.RESET_PW;
+        Date expireIn = new Date();
+        expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
+        userToken.expireIn = expireIn;
+        return userToken;
+    }
+
+    public static UserToken ofNormal(User user) {
+        UserToken userToken = new UserToken();
+        userToken.token = SecurityUtil.getRandomString(32);
+        userToken.user = user;
+        userToken.used = false;
+        userToken.type = UserTokenType.RESET_PW;
+        Date expireIn = new Date();
+        expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
+        userToken.expireIn = expireIn;
+        return userToken;
+    }
+
 }

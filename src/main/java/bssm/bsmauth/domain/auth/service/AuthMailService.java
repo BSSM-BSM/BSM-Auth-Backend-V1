@@ -69,7 +69,7 @@ public class AuthMailService {
         expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
 
         TeacherAuthCode authCode = TeacherAuthCode.builder()
-                .token(SecurityUtil.getRandomString(6))
+                .token(SecurityUtil.getRandomString(8))
                 .email(req.getEmail())
                 .used(false)
                 .type(UserTokenType.AUTH_CODE)
@@ -99,22 +99,13 @@ public class AuthMailService {
         userMailService.sendFindIdMail(user.findEmailOrNull(), user.getId());
     }
 
+    @Transactional
     public void resetPwMail(ResetPwMailReq req) {
         User user = userRepository.findById(req.getId())
                 .orElseThrow(NoSuchUserException::new);
-
-        Date expireIn = new Date();
-        expireIn.setTime(expireIn.getTime() + (5 * 60 * 1000));
-
-        UserToken token = UserToken.builder()
-                .token(SecurityUtil.getRandomString(32))
-                .user(user)
-                .used(false)
-                .type(UserTokenType.RESET_PW)
-                .expireIn(expireIn)
-                .build();
-
         String email = user.findEmailOrNull();
+
+        UserToken token = UserToken.ofResetPw(user);
         userMailService.sendResetPwMail(email, token.getToken());
         tokenRepository.save(token);
     }
