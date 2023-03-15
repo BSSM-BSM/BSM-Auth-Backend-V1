@@ -106,7 +106,7 @@ public class AuthService {
         }
     }
 
-    public User login(LoginReq req) throws Exception {
+    public User login(LoginReq req) {
         User user = userRepository.findById(req.getId())
                 .orElseThrow(() -> {
                     throw new BadRequestException(ImmutableMap.<String, String>builder().
@@ -123,6 +123,7 @@ public class AuthService {
         return user;
     }
 
+    @Transactional
     public AuthTokenRes loginPostProcess(HttpServletResponse res, User user) {
         String token = jwtProvider.createAccessToken(user);
         String refreshToken = jwtProvider.createRefreshToken(user.getCode());
@@ -144,6 +145,7 @@ public class AuthService {
         res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(TOKEN_COOKIE_NAME, "", 0).toString());
     }
 
+    @Transactional
     private void expireRefreshToken(Cookie refreshTokenCookie) {
         if (refreshTokenCookie == null) return;
 
