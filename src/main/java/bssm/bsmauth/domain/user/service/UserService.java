@@ -5,6 +5,7 @@ import bssm.bsmauth.domain.user.domain.repository.*;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.domain.user.presentation.dto.req.*;
 import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;
+import bssm.bsmauth.domain.user.presentation.dto.res.UserNicknameHistoryRes;
 import bssm.bsmauth.domain.user.presentation.dto.res.UserRes;
 import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
@@ -20,6 +21,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -40,18 +42,19 @@ public class UserService {
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
     public UserRes findMyInfo() {
-        return currentUser.findUser()
-                .toUserResponse();
+        User user = currentUser.findUser();
+        return UserRes.create(user);
     }
 
     public OtherUserRes getOtherUserInfo(long userCode) {
-        return userFacade.findByCode(userCode)
-                .toOtherUserResponse();
+        User user = userFacade.findByCode(userCode);
+        return OtherUserRes.create(user);
     }
 
-    public OtherUserRes findUserByNickname(String nickname) {
-        return userFacade.findByNickname(nickname)
-                .toOtherUserResponse();
+    public List<UserNicknameHistoryRes> findUserByNicknameHistory(String nickname) {
+        return userRepository.findNicknameHistory(nickname).stream()
+                .map(UserNicknameHistoryRes::create)
+                .toList();
     }
 
     @Transactional

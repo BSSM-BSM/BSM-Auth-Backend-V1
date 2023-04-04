@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("user")
@@ -27,8 +28,8 @@ public class UserController {
     }
 
     @GetMapping("nickname/{nickname}")
-    public OtherUserRes findUserByNickname(@PathVariable String nickname) {
-        return userService.findUserByNickname(nickname);
+    public List<UserNicknameHistoryRes> findUserByNicknameHistory(@PathVariable String nickname) {
+        return userService.findUserByNicknameHistory(nickname);
     }
 
     @PutMapping("nickname")

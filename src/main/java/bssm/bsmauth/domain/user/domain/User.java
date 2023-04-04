@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.user.domain;
 
+import bssm.bsmauth.domain.oauth.domain.OauthAuthCode;
 import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.exception.NoSuchUserEmailException;
 import bssm.bsmauth.domain.user.exception.NoSuchUserNameException;
@@ -10,6 +11,10 @@ import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -54,6 +59,10 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 64)
     private String pwSalt;
 
+    @OrderBy("modifiedAt DESC")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private final List<NicknameHistory> nicknameHistories = new ArrayList<>();
+
     public String findEmailOrNull() {
         if (this.role == UserRole.STUDENT) {
             return this.student.getEmail();
@@ -87,37 +96,6 @@ public class User extends BaseTimeEntity {
 
     public void updateProfileUrl(String profileUrl) {
         this.profileUrl = profileUrl;
-    }
-
-    public UserRes toUserResponse() {
-        UserRes.UserResBuilder builder = UserRes.builder()
-                .code(code)
-                .role(role)
-                .nickname(nickname)
-                .createdAt(getCreatedAt());
-
-        return (
-                switch (role) {
-                    case STUDENT -> builder
-                            .email(student.getEmail())
-                            .student(student.toInfo());
-                    case TEACHER -> builder
-                            .email(teacher.getEmail())
-                            .teacher(teacher.toInfo());
-                }
-        ).build();
-    }
-
-    public OtherUserRes toOtherUserResponse() {
-        UserRes user = this.toUserResponse();
-        return OtherUserRes.builder()
-                .code(user.getCode())
-                .role(user.getRole())
-                .nickname(user.getNickname())
-                .createdAt(user.getCreatedAt())
-                .student(user.getStudent())
-                .teacher(user.getTeacher())
-                .build();
     }
 
     public UserCache toUserCache() {

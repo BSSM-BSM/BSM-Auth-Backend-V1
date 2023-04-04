@@ -20,7 +20,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("login")
-    public AuthTokenRes login(@Valid @RequestBody LoginReq req, HttpServletResponse res) throws Exception {
+    public AuthTokenRes login(@Valid @RequestBody LoginReq req, HttpServletResponse res) {
         return authService.loginPostProcess(res, authService.login(req));
     }
 
@@ -30,27 +30,27 @@ public class AuthController {
     }
 
     @PostMapping("student")
-    public void studentSignUp(@Valid @RequestBody UserSignUpReq req) throws Exception {
+    public void studentSignUp(@Valid @RequestBody UserSignUpReq req) {
         authService.studentSignUp(req);
     }
 
     @PostMapping("teacher")
-    public void teacherSignUp(@Valid @RequestBody TeacherSignUpReq req) throws Exception {
+    public void teacherSignUp(@Valid @RequestBody TeacherSignUpReq req) {
         authService.teacherSignUp(req);
     }
 
     @PutMapping("pw")
-    public void updatePw(@Valid @RequestBody UpdatePwReq req) throws Exception {
+    public void updatePw(@Valid @RequestBody UpdatePwReq req) {
         authService.updatePw(req);
     }
 
     @PostMapping("pw/token")
-    public void resetPwByToken(@Valid @RequestBody ResetPwByTokenReq req) throws Exception {
+    public void resetPwByToken(@Valid @RequestBody ResetPwByTokenReq req) {
         authService.resetPwByToken(req);
     }
 
     @GetMapping("pw/token")
-    public ResetPwTokenRes findResetPwTokenInfo(@Valid @RequestParam String token) throws Exception {
+    public ResetPwTokenRes findResetPwTokenInfo(@Valid @RequestParam String token) {
         return authService.findResetPwTokenInfo(token);
     }
 

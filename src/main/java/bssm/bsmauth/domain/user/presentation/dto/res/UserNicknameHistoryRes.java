@@ -9,11 +9,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class OtherUserRes {
+public class UserNicknameHistoryRes {
 
     private Long code;
     private String nickname;
@@ -22,9 +23,10 @@ public class OtherUserRes {
     private UserRole role;
     private StudentRes student;
     private TeacherRes teacher;
+    private List<NicknameHistoryRes> nicknameHistory;
 
-    public static OtherUserRes create(User user) {
-        OtherUserRes res = new OtherUserRes();
+    public static UserNicknameHistoryRes create(User user) {
+        UserNicknameHistoryRes res = new UserNicknameHistoryRes();
         res.code = user.getCode();
         res.nickname = user.getNickname();
         res.createdAt = user.getCreatedAt();
@@ -32,6 +34,9 @@ public class OtherUserRes {
         res.role = user.getRole();
         res.student = StudentRes.ofUser(user);
         res.teacher = TeacherRes.ofUser(user);
+        res.nicknameHistory = user.getNicknameHistories().stream()
+                .map(NicknameHistoryRes::create)
+                .toList();
         return res;
     }
 }
