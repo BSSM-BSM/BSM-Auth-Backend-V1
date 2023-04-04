@@ -10,7 +10,7 @@ import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherAuthCodeMail
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherFindIdMailReq;
 import bssm.bsmauth.domain.user.domain.Student;
 import bssm.bsmauth.domain.user.domain.User;
-import bssm.bsmauth.domain.user.domain.UserRole;
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.domain.repository.StudentRepository;
 import bssm.bsmauth.domain.user.domain.repository.TeacherRepository;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;

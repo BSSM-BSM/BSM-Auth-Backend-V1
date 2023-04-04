@@ -2,7 +2,7 @@ package bssm.bsmauth.domain.user.domain.repository;
 
 import bssm.bsmauth.domain.user.domain.Student;
 import bssm.bsmauth.domain.user.domain.User;
-import bssm.bsmauth.domain.user.domain.UserRole;
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

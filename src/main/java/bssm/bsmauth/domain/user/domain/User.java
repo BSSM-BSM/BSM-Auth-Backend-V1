@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.user.domain;
 
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.exception.NoSuchUserEmailException;
 import bssm.bsmauth.domain.user.exception.NoSuchUserNameException;
 import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;

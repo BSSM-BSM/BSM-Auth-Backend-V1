@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.user.presentation.dto.res;
 
-import bssm.bsmauth.domain.user.domain.UserRole;
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.presentation.dto.res.student.StudentRes;
 import bssm.bsmauth.domain.user.presentation.dto.res.teacher.TeacherRes;
 import com.fasterxml.jackson.annotation.JsonInclude;

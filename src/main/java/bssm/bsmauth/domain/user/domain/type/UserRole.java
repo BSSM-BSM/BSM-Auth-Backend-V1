@@ -1,4 +1,4 @@
-package bssm.bsmauth.domain.user.domain;
+package bssm.bsmauth.domain.user.domain.type;
 
 public enum UserRole {
     STUDENT,

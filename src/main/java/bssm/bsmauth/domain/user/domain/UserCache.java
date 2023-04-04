@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.user.domain;
 
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Getter;

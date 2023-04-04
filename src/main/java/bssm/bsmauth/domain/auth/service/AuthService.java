@@ -15,6 +15,7 @@ import bssm.bsmauth.domain.user.domain.repository.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherSignUpReq;
 import bssm.bsmauth.domain.auth.presentation.dto.res.ResetPwTokenRes;
 import bssm.bsmauth.domain.auth.presentation.dto.res.AuthTokenRes;
+import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
@@ -41,6 +42,7 @@ import java.util.Objects;
 public class AuthService {
 
     private final CurrentUser currentUser;
+    private final UserFacade userFacade;
     private final JwtProvider jwtProvider;
     private final CookieProvider cookieProvider;
 
@@ -61,32 +63,34 @@ public class AuthService {
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     @Transactional
-    public void studentSignUp(UserSignUpReq req) throws Exception {
+    public void studentSignUp(UserSignUpReq req) {
         Student student = studentRepository.findByAuthCode(req.getAuthCode())
                 .orElseThrow(NoSuchAuthCodeException::new);
         if (!student.isCodeAvailable()) {
             throw new AlreadyUsedAuthCodeException();
         }
         validateSignUp(req);
+        student.expireAuthCode();
 
         User user = User.createStudent(student, req.getId(), req.getPw(), req.getNickname());
-        student.expireAuthCode();
-        userRepository.save(user);
+        user = userRepository.save(user);
+        userFacade.recordNicknameUpdate(user, req.getNickname());
     }
 
     @Transactional
-    public void teacherSignUp(TeacherSignUpReq req) throws Exception {
+    public void teacherSignUp(TeacherSignUpReq req) {
         TeacherAuthCode teacherAuthCode = teacherAuthCodeRepository.findByTokenAndType(req.getAuthCode(), UserTokenType.AUTH_CODE)
                 .orElseThrow(NoSuchAuthCodeException::new);
         if (teacherAuthCode.isUsed()) {
             throw new AlreadyUsedAuthCodeException();
         }
         validateSignUp(req);
+        teacherAuthCode.expire();
 
         Teacher teacher = teacherRepository.save(Teacher.create(req.getName(), teacherAuthCode.getEmail()));
         User user = User.createTeacher(teacher, req.getId(), req.getPw(), req.getNickname());
-        teacherAuthCode.expire();
-        userRepository.save(user);
+        user = userRepository.save(user);
+        userFacade.recordNicknameUpdate(user, req.getNickname());
     }
 
     private void validateSignUp(UserSignUpReq req) {

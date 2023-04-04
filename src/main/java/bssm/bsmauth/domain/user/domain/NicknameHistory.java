@@ -1,0 +1,41 @@
+package bssm.bsmauth.domain.user.domain;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import java.time.LocalDateTime;
+
+@Getter
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class NicknameHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "INT UNSIGNED")
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
+    @Column(nullable = false, length = 20)
+    private String nickname;
+
+    private LocalDateTime modifiedAt;
+
+    public static NicknameHistory create(User user, String nickname) {
+        NicknameHistory nicknameHistory = new NicknameHistory();
+        nicknameHistory.user = user;
+        nicknameHistory.nickname = nickname;
+        nicknameHistory.modifiedAt = LocalDateTime.now();
+        return nicknameHistory;
+    }
+}

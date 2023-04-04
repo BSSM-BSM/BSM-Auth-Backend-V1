@@ -1,8 +1,10 @@
 package bssm.bsmauth.domain.user.facade;
 
 import bssm.bsmauth.domain.auth.exception.NoSuchTokenException;
+import bssm.bsmauth.domain.user.domain.NicknameHistory;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.UserCache;
+import bssm.bsmauth.domain.user.domain.repository.NicknameHistoryRepository;
 import bssm.bsmauth.domain.user.domain.repository.RedisUserRepository;
 import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
@@ -17,6 +19,7 @@ public class UserFacade {
     private final UserRepository userRepository;
     private final RedisUserRepository userRedisRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final NicknameHistoryRepository nicknameHistoryRepository;
 
     public User findByRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByTokenAndIsAvailable(refreshToken, true)
@@ -48,6 +51,11 @@ public class UserFacade {
         User user = findByCode(userCode);
         saveUserCache(user);
         return user.toUserCache();
+    }
+
+    public void recordNicknameUpdate(User user, String newNickname) {
+        NicknameHistory nicknameHistory = NicknameHistory.create(user, newNickname);
+        nicknameHistoryRepository.save(nicknameHistory);
     }
 
 }

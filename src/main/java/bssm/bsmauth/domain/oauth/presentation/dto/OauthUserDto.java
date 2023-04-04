@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.oauth.presentation.dto;
 
-import bssm.bsmauth.domain.user.domain.UserRole;
+import bssm.bsmauth.domain.user.domain.type.UserRole;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;

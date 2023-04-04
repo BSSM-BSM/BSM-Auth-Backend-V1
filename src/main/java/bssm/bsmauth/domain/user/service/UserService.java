@@ -29,6 +29,7 @@ public class UserService {
 
     private final CurrentUser currentUser;
     private final UserFacade userFacade;
+
     private final UserRepository userRepository;
 
     @Value("${env.file.path.base}")
@@ -54,11 +55,12 @@ public class UserService {
     }
 
     @Transactional
-    public void updateNickname(UpdateNicknameReq dto) {
-        userRepository.findByNickname(dto.getNewNickname())
+    public void updateNickname(UpdateNicknameReq req) {
+        userRepository.findByNickname(req.getNewNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
         User user = currentUser.findUser();
-        user.updateNickname(dto.getNewNickname());
+        user.updateNickname(req.getNewNickname());
+        userFacade.recordNicknameUpdate(user, req.getNewNickname());
         userFacade.saveUserCache(user);
     }
 
