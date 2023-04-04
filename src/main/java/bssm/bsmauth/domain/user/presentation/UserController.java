@@ -26,6 +26,11 @@ public class UserController {
         return userService.getOtherUserInfo(userCode);
     }
 
+    @GetMapping("nickname/{nickname}")
+    public OtherUserRes findUserByNickname(@PathVariable String nickname) {
+        return userService.findUserByNickname(nickname);
+    }
+
     @PutMapping("nickname")
     public void updateNickname(@Valid @RequestBody UpdateNicknameReq req) {
         userService.updateNickname(req);

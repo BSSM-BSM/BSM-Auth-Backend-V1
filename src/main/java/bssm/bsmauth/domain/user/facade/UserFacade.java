@@ -29,6 +29,11 @@ public class UserFacade {
                 .orElseThrow(NoSuchUserException::new);
     }
 
+    public User findByNickname(String nickname) {
+        return userRepository.findByNickname(nickname)
+                .orElseThrow(NoSuchUserException::new);
+    }
+
     public User findCachedUserByCode(long userCode) {
         return userRedisRepository.findById(userCode)
                 .orElseGet(() -> findAndSaveUserCache(userCode))

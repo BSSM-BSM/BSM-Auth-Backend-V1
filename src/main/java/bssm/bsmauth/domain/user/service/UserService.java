@@ -2,7 +2,6 @@ package bssm.bsmauth.domain.user.service;
 
 import bssm.bsmauth.domain.user.domain.*;
 import bssm.bsmauth.domain.user.domain.repository.*;
-import bssm.bsmauth.domain.user.exception.NoSuchUserException;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.domain.user.presentation.dto.req.*;
 import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;
@@ -46,6 +45,11 @@ public class UserService {
 
     public OtherUserRes getOtherUserInfo(long userCode) {
         return userFacade.findByCode(userCode)
+                .toOtherUserResponse();
+    }
+
+    public OtherUserRes findUserByNickname(String nickname) {
+        return userFacade.findByNickname(nickname)
                 .toOtherUserResponse();
     }
 
