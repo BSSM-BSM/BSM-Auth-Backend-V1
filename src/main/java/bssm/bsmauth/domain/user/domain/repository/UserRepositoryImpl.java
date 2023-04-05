@@ -22,24 +22,24 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .leftJoin(user.student, student)
                 .leftJoin(user.teacher, teacher)
                 .fetchJoin()
-                .distinct()
                 .where(
-                        user.nickname.like(nickname)
+                        user.nickname.eq(nickname)
                 )
+                .distinct()
                 .fetchOne();
 
         List<User> userList = jpaQueryFactory.selectFrom(user)
                 .leftJoin(user.student, student)
                 .leftJoin(user.teacher, teacher)
                 .fetchJoin()
-                .distinct()
                 .where(
-                        user.nickname.notLike(nickname),
+                        user.nickname.ne(nickname),
                         user.nicknameHistories.any().nickname.contains(nickname)
                 )
                 .orderBy(
-                        user.nicknameHistories.any().modifiedAt.desc()
+                        user.modifiedAt.desc()
                 )
+                .distinct()
                 .fetch();
         if (currentNicknameUser != null) {
             userList.add(0, currentNicknameUser);

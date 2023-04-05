@@ -27,8 +27,8 @@ public class UserController {
         return userService.getOtherUserInfo(userCode);
     }
 
-    @GetMapping("nickname/{nickname}")
-    public List<UserNicknameHistoryRes> findUserByNicknameHistory(@PathVariable String nickname) {
+    @GetMapping("nickname")
+    public List<UserNicknameHistoryRes> findUserByNicknameHistory(@RequestParam String nickname) {
         return userService.findUserByNicknameHistory(nickname);
     }
 
