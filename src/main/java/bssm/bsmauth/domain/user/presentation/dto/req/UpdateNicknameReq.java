@@ -7,7 +7,6 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-@Getter
 @NoArgsConstructor
 public class UpdateNicknameReq {
 
@@ -22,4 +21,8 @@ public class UpdateNicknameReq {
             message = "닉네임은 한, 영, 숫자, 특수문자만 들어가야 합니다"
     )
     private String newNickname;
+
+    public String getNewNickname() {
+        return newNickname.strip();
+    }
 }
