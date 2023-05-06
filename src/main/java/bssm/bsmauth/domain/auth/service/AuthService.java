@@ -7,6 +7,7 @@ import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
 import bssm.bsmauth.domain.auth.domain.repository.TeacherAuthCodeRepository;
 import bssm.bsmauth.domain.auth.domain.repository.TokenRepository;
 import bssm.bsmauth.domain.auth.exception.AlreadyUsedAuthCodeException;
+import bssm.bsmauth.domain.auth.exception.InvalidCredentialsException;
 import bssm.bsmauth.domain.auth.exception.NoSuchAuthCodeException;
 import bssm.bsmauth.domain.auth.exception.NoSuchTokenException;
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
@@ -21,7 +22,6 @@ import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
 import bssm.bsmauth.global.jwt.JwtProvider;
 import bssm.bsmauth.global.cookie.CookieProvider;
-import bssm.bsmauth.global.utils.SecurityUtil;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,14 +94,14 @@ public class AuthService {
     }
 
     private void validateSignUp(UserSignUpReq req) {
-        validatePw(req.getPw(), req.getCheckPw());
+        checkPasswordMatch(req.getPw(), req.getCheckPw());
         userRepository.findById(req.getId())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 ID 입니다");});
         userRepository.findByNickname(req.getNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
     }
 
-    private void validatePw(String pw, String checkPw) {
+    private void checkPasswordMatch(String pw, String checkPw) {
         if (!Objects.equals(pw, checkPw)) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
                     put("pwCheck", "비밀번호 재입력이 맞지 않습니다").
@@ -111,18 +111,12 @@ public class AuthService {
     }
 
     public User login(LoginReq req) {
-        User user = userRepository.findById(req.getId())
-                .orElseThrow(() -> {
-                    throw new BadRequestException(ImmutableMap.<String, String>builder().
-                            put("idOrPw", "id 또는 password가 맞지 않습니다").
-                            build()
-                    );
-                });
-        if (!user.getPw().equals(SecurityUtil.encryptPw(user.getPwSalt(), req.getPw()))) {
-            throw new BadRequestException(ImmutableMap.<String, String>builder().
-                    put("idOrPw", "id 또는 password가 맞지 않습니다").
-                    build()
-            );
+        User user = userFacade.findByUserIdOrNull(req.getId());
+        if (user == null) {
+            throw new InvalidCredentialsException();
+        }
+        if (!user.validatePw(req.getPw())) {
+            throw new InvalidCredentialsException();
         }
         return user;
     }
@@ -163,7 +157,7 @@ public class AuthService {
 
     @Transactional
     public void updatePw(UpdatePwReq req) {
-        validatePw(req.getNewPw(), req.getCheckNewPw());
+        checkPasswordMatch(req.getNewPw(), req.getCheckNewPw());
         User user = currentUser.findUser();
         user.updatePw(req.getNewPw());
     }
@@ -173,7 +167,7 @@ public class AuthService {
         UserToken token = tokenRepository.findByTokenAndType(req.getToken(), UserTokenType.RESET_PW)
                 .orElseThrow(NoSuchTokenException::new);
         if (token.isUsed() || new Date().after(token.getExpireIn())) throw new NoSuchTokenException();
-        validatePw(req.getNewPw(), req.getCheckNewPw());
+        checkPasswordMatch(req.getNewPw(), req.getCheckNewPw());
 
         User user = token.getUser();
         user.updatePw(req.getNewPw());

@@ -21,6 +21,11 @@ public class UserFacade {
     private final RefreshTokenRepository refreshTokenRepository;
     private final NicknameHistoryRepository nicknameHistoryRepository;
 
+    public User findByUserIdOrNull(String userId) {
+        return userRepository.findById(userId)
+                .orElseGet(() -> null);
+    }
+
     public User findByRefreshToken(String refreshToken) {
         return refreshTokenRepository.findByTokenAndIsAvailable(refreshToken, true)
                 .orElseThrow(NoSuchTokenException::new)

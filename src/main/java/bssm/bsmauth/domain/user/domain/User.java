@@ -83,6 +83,11 @@ public class User extends BaseTimeEntity {
         throw new NoSuchUserNameException();
     }
 
+    public boolean validatePw(String pw) {
+        String encryptedPw = SecurityUtil.encryptPw(this.pwSalt, pw);
+        return this.pw.equals(encryptedPw);
+    }
+
     public void updatePw(String pw) {
         // 비밀번호 솔트 값 생성
         String pwSalt = SecurityUtil.getRandomString(64);

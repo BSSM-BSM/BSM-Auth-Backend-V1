@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 
 import static bssm.bsmauth.domain.user.domain.QUser.user;
 import static bssm.bsmauth.domain.user.domain.QStudent.student;
@@ -19,9 +18,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     @Override
     public List<User> findNicknameHistory(String nickname) {
         User currentNicknameUser = jpaQueryFactory.selectFrom(user)
-                .leftJoin(user.student, student)
-                .leftJoin(user.teacher, teacher)
-                .fetchJoin()
+                .leftJoin(user.student, student).fetchJoin()
+                .leftJoin(user.teacher, teacher).fetchJoin()
                 .where(
                         user.nickname.eq(nickname)
                 )
@@ -29,9 +27,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .fetchOne();
 
         List<User> userList = jpaQueryFactory.selectFrom(user)
-                .leftJoin(user.student, student)
-                .leftJoin(user.teacher, teacher)
-                .fetchJoin()
+                .leftJoin(user.student, student).fetchJoin()
+                .leftJoin(user.teacher, teacher).fetchJoin()
                 .where(
                         user.nickname.ne(nickname),
                         user.nicknameHistories.any().nickname.contains(nickname)
