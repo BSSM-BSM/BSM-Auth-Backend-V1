@@ -6,6 +6,7 @@ import bssm.bsmauth.domain.auth.domain.UserTokenType;
 import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
 import bssm.bsmauth.domain.auth.domain.repository.TeacherAuthCodeRepository;
 import bssm.bsmauth.domain.auth.domain.repository.TokenRepository;
+import bssm.bsmauth.domain.auth.exception.AccountRecoveryRequiredException;
 import bssm.bsmauth.domain.auth.exception.AlreadyUsedAuthCodeException;
 import bssm.bsmauth.domain.auth.exception.InvalidCredentialsException;
 import bssm.bsmauth.domain.auth.exception.NoSuchAuthCodeException;
@@ -110,12 +111,17 @@ public class AuthService {
         }
     }
 
+    @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public User login(LoginReq req) {
         User user = userFacade.findByUserIdOrNull(req.getId());
         if (user == null) {
             throw new InvalidCredentialsException();
         }
+        if (user.checkAccountLock()) {
+            throw new AccountRecoveryRequiredException();
+        }
         if (!user.validatePw(req.getPw())) {
+            user.incrementFailedLoginAttempts();
             throw new InvalidCredentialsException();
         }
         return user;
@@ -171,6 +177,7 @@ public class AuthService {
 
         User user = token.getUser();
         user.updatePw(req.getNewPw());
+        user.unlockAccount();
         token.expire();
     }
 

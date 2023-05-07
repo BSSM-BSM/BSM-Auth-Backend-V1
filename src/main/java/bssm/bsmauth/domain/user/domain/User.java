@@ -59,6 +59,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 64)
     private String pwSalt;
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    private Short failedLoginAttempts;
+
     @OrderBy("modifiedAt DESC")
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final List<NicknameHistory> nicknameHistories = new ArrayList<>();
@@ -86,6 +89,19 @@ public class User extends BaseTimeEntity {
     public boolean validatePw(String pw) {
         String encryptedPw = SecurityUtil.encryptPw(this.pwSalt, pw);
         return this.pw.equals(encryptedPw);
+    }
+
+    public void incrementFailedLoginAttempts() {
+        this.failedLoginAttempts++;
+    }
+
+    public boolean checkAccountLock() {
+        Short MAX_LOGIN_ATTEMPTS = 5;
+        return this.failedLoginAttempts >= MAX_LOGIN_ATTEMPTS;
+    }
+
+    public void unlockAccount() {
+        this.failedLoginAttempts = 0;
     }
 
     public void updatePw(String pw) {
@@ -125,6 +141,7 @@ public class User extends BaseTimeEntity {
         user.id = id;
         user.updatePw(pw);
         user.updateNickname(nickname);
+        user.failedLoginAttempts = 0;
         return user;
     }
 
