@@ -124,6 +124,7 @@ public class AuthService {
             user.incrementFailedLoginAttempts();
             throw new InvalidCredentialsException();
         }
+        user.resetFailedLoginAttempts();
         return user;
     }
 

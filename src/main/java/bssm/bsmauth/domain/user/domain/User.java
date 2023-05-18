@@ -91,6 +91,10 @@ public class User extends BaseTimeEntity {
         return this.pw.equals(encryptedPw);
     }
 
+    public void resetFailedLoginAttempts() {
+        this.failedLoginAttempts++;
+    }
+
     public void incrementFailedLoginAttempts() {
         this.failedLoginAttempts++;
     }
