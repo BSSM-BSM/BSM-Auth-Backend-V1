@@ -17,6 +17,7 @@ import bssm.bsmauth.domain.user.domain.repository.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherSignUpReq;
 import bssm.bsmauth.domain.auth.presentation.dto.res.ResetPwTokenRes;
 import bssm.bsmauth.domain.auth.presentation.dto.res.AuthTokenRes;
+import bssm.bsmauth.domain.user.exception.ForbiddenNicknameException;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
@@ -53,6 +54,7 @@ public class AuthService {
     private final TeacherRepository teacherRepository;
     private final TokenRepository tokenRepository;
     private final TeacherAuthCodeRepository teacherAuthCodeRepository;
+    private final ForbiddenNicknameRepository forbiddenNicknameRepository;
 
     @Value("${env.cookie.name.token}")
     private String TOKEN_COOKIE_NAME;
@@ -98,6 +100,9 @@ public class AuthService {
         checkPasswordMatch(req.getPw(), req.getCheckPw());
         userRepository.findById(req.getId())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 ID 입니다");});
+        if (forbiddenNicknameRepository.existsByNickname(req.getNickname())) {
+            throw new ForbiddenNicknameException();
+        }
         userRepository.findByNickname(req.getNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
     }

@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.user.service;
 
 import bssm.bsmauth.domain.user.domain.*;
 import bssm.bsmauth.domain.user.domain.repository.*;
+import bssm.bsmauth.domain.user.exception.ForbiddenNicknameException;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.domain.user.presentation.dto.req.*;
 import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;
@@ -33,6 +34,7 @@ public class UserService {
     private final UserFacade userFacade;
 
     private final UserRepository userRepository;
+    private final ForbiddenNicknameRepository forbiddenNicknameRepository;
 
     @Value("${env.file.path.base}")
     private String REAL_RESOURCE_PATH;
@@ -59,6 +61,9 @@ public class UserService {
 
     @Transactional
     public void updateNickname(UpdateNicknameReq req) {
+        if (forbiddenNicknameRepository.existsByNickname(req.getNewNickname())) {
+            throw new ForbiddenNicknameException();
+        }
         userRepository.findByNickname(req.getNewNickname())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 닉네임 입니다");});
         User user = currentUser.findUser();

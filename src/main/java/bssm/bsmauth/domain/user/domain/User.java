@@ -92,7 +92,7 @@ public class User extends BaseTimeEntity {
     }
 
     public void resetFailedLoginAttempts() {
-        this.failedLoginAttempts++;
+        this.failedLoginAttempts = 0;
     }
 
     public void incrementFailedLoginAttempts() {
