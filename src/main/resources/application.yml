@@ -39,8 +39,10 @@ logging:
 
 spring:
   mail:
-    host: localhost
+    host: ${env.mail.host}
     port: ${env.mail.port}
+    username: ${env.mail.username}
+    password: ${env.mail.password}
     transport:
       protocol: smtp
     default:
@@ -48,6 +50,7 @@ spring:
     properties:
       mail:
         smtp:
-          auth: false
+          auth: ${env.mail.auth}
+          timeout: 10000
           starttls:
-            enable: false
+            enable: true

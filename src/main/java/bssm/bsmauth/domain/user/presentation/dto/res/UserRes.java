@@ -5,7 +5,7 @@ import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.presentation.dto.res.student.StudentRes;
 import bssm.bsmauth.domain.user.presentation.dto.res.teacher.TeacherRes;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
