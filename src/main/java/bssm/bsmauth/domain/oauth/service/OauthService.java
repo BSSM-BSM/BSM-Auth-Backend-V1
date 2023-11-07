@@ -8,7 +8,6 @@ import bssm.bsmauth.domain.oauth.presentation.dto.res.*;
 import bssm.bsmauth.domain.user.exception.NoSuchUserException;
 import bssm.bsmauth.global.auth.CurrentUser;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
-import bssm.bsmauth.global.error.exceptions.InternalServerException;
 import bssm.bsmauth.global.error.exceptions.NotFoundException;
 import bssm.bsmauth.domain.oauth.presentation.dto.OauthUserDto;
 import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthAuthorizationReq;
@@ -126,40 +125,11 @@ public class OauthService {
         User user = userRepository.findById(token.getUserCode())
                 .orElseThrow(NoSuchUserException::new);
 
-        List<String> scopeList = new ArrayList<>();
-        client.getScopes()
-                .forEach(scope -> scopeList.add(scope.getOauthScope().getId()));
+        List<OauthScope> scopeList = client.getScopes().stream()
+                .map(OauthClientScope::getOauthScope)
+                .toList();
 
-        OauthUserDto.OauthUserDtoBuilder oauthUserDto = OauthUserDto.builder();
-        oauthUserDto.role(user.getRole());
-        oauthUserDto.profileUrl(user.getProfileUrl());
-
-        scopeList.forEach(scope -> {
-            switch (user.getRole()) {
-                case STUDENT -> {
-                    switch (scope) {
-                        case "code" -> oauthUserDto.code(user.getCode());
-                        case "nickname" -> oauthUserDto.nickname(user.getNickname());
-                        case "enrolledAt" -> oauthUserDto.enrolledAt(user.getStudent().getEnrolledAt());
-                        case "grade" -> oauthUserDto.grade(user.getStudent().getGrade());
-                        case "classNo" -> oauthUserDto.classNo(user.getStudent().getClassNo());
-                        case "studentNo" -> oauthUserDto.studentNo(user.getStudent().getStudentNo());
-                        case "name" -> oauthUserDto.name(user.getStudent().getName());
-                        case "email" -> oauthUserDto.email(user.getStudent().getEmail());
-                    }
-                }
-                case TEACHER -> {
-                    switch (scope) {
-                        case "code" -> oauthUserDto.code(user.getCode());
-                        case "nickname" -> oauthUserDto.nickname(user.getNickname());
-                        case "name" -> oauthUserDto.name(user.getTeacher().getName());
-                        case "email" -> oauthUserDto.email(user.getTeacher().getEmail());
-                    }
-                }
-                default -> throw new InternalServerException();
-            }
-        });
-
-        return OauthResourceRes.create(oauthUserDto.build(), scopeList);
+        OauthUserDto oauthUserDto = OauthUserDto.create(scopeList, user);
+        return OauthResourceRes.create(oauthUserDto, scopeList);
     }
 }

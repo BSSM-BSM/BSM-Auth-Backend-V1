@@ -19,7 +19,7 @@ public class OauthScopeProvider {
 
     @PostConstruct
     private void init() {
-        List<OauthScope> scopes = oauthScopeRepository.findAll();
+        List<OauthScope> scopes = oauthScopeRepository.findAllByOrderByIdxAsc();
         scopes.forEach(scope -> {
             scopeList.put(scope.getId(), scope);
         });
@@ -32,6 +32,7 @@ public class OauthScopeProvider {
     }
 
     public List<OauthScope> getAllScope() {
-        return scopeList.values().stream().toList();
+        return scopeList.values().stream()
+                .toList();
     }
 }

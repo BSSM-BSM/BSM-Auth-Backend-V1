@@ -15,32 +15,40 @@ public class Student {
     @Column(length = 10)
     private String studentId;
 
-    @Column(columnDefinition = "INT(1) UNSIGNED")
+    @Column(columnDefinition = "INT(1) UNSIGNED", nullable = false)
     private boolean codeAvailable;
 
-    @Column(length = 8)
+    @Column(length = 8, nullable = false)
     private String authCode;
 
-    @Column(columnDefinition = "year")
+    @Column(columnDefinition = "year", nullable = false)
     private int enrolledAt;
 
-    @Column(columnDefinition = "INT(1) UNSIGNED")
+    @Column(columnDefinition = "INT(1) UNSIGNED", nullable = false)
     private int grade;
 
-    @Column(columnDefinition = "INT(1) UNSIGNED")
+    @Column(columnDefinition = "INT(1) UNSIGNED", nullable = false)
     private int classNo;
 
-    @Column(columnDefinition = "INT(2) UNSIGNED")
+    @Column(columnDefinition = "INT(2) UNSIGNED", nullable = false)
     private int studentNo;
 
-    @Column(length = 8)
+    @Column(length = 8, nullable = false)
     private String name;
 
-    @Column(length = 32)
+    @Column(length = 32, nullable = false)
     private String email;
 
     public void expireAuthCode() {
         this.codeAvailable = false;
+    }
+
+    public Integer getCardinal() {
+        return this.enrolledAt - 2020;
+    }
+
+    public boolean isGraduate() {
+        return this.grade == 0 && this.classNo == 0 && this.studentNo == 0;
     }
 
     @Builder
