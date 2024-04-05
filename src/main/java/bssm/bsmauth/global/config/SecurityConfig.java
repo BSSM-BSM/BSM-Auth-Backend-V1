@@ -1,6 +1,7 @@
 package bssm.bsmauth.global.config;
 
 import bssm.bsmauth.global.auth.AuthFilterExceptionHandler;
+import bssm.bsmauth.global.auth.constant.RequestPath;
 import bssm.bsmauth.global.error.HttpErrorResponse;
 import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
 import bssm.bsmauth.global.auth.AuthFilter;
@@ -8,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -16,6 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,9 +32,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .antMatchers("/auth/pw/token")
-                .antMatchers(HttpMethod.POST, "/auth/student", "/auth/teacher", "/auth/login", "/auth/pw/token", "/auth/mail/**")
-                .antMatchers(HttpMethod.POST, "/oauth/token", "/oauth/resource");
+                .requestMatchers(RequestPath.ignoringPaths.toArray(RequestMatcher[]::new));
     }
 
     @Bean
@@ -53,19 +52,17 @@ public class SecurityConfig {
                 .httpBasic().disable()
                 .cors().disable()
                 .csrf().disable()
+                .formLogin().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .exceptionHandling()
                     .authenticationEntryPoint(authenticationEntryPoint())
-                .and()
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-                .formLogin().disable();
+                .and().authorizeRequests()
+                .anyRequest().authenticated();
 
         http
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(authFilterExceptionHandler, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authFilterExceptionHandler, AuthFilter.class);
 
         return http.build();
     }

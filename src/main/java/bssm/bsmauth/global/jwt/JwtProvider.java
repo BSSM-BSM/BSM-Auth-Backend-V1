@@ -24,8 +24,8 @@ public class JwtProvider {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserFacade userFacade;
 
-    @Value("${env.jwt.secretKey}")
-    private String JWT_SECRET_KEY;
+    @Value("${env.jwt.secret-key.auth}")
+    private String JWT_AUTH_SECRET_KEY;
     @Value("${env.jwt.time.token}")
     private long JWT_TOKEN_MAX_TIME;
     @Value("${env.jwt.time.refreshToken}")
@@ -64,7 +64,7 @@ public class JwtProvider {
                 .setClaims(claims)
                 .setIssuedAt(date)
                 .setExpiration(new Date(date.getTime() + (time * 1000)))
-                .signWith(Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(JWT_AUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
 }
