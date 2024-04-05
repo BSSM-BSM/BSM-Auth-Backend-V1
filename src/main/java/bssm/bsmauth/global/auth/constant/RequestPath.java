@@ -9,7 +9,7 @@ import java.util.List;
 
 public class RequestPath {
 
-    public static final List<RequestMatcher> ignoringPaths = Arrays.asList(
+    public static final List<RequestMatcher> excludedAuthTokenPaths = Arrays.asList(
             new AntPathRequestMatcher("/auth/login", HttpMethod.POST.toString()),
             new AntPathRequestMatcher("/auth/mail/**", HttpMethod.POST.toString()),
             new AntPathRequestMatcher("/auth/pw/token"),
@@ -17,6 +17,11 @@ public class RequestPath {
             new AntPathRequestMatcher("/auth/student", HttpMethod.POST.toString()),
             new AntPathRequestMatcher("/auth/teacher", HttpMethod.POST.toString()),
 
+            new AntPathRequestMatcher("/oauth/token", HttpMethod.POST.toString()),
+            new AntPathRequestMatcher("/oauth/resource", HttpMethod.POST.toString())
+    );
+
+    public static final List<RequestMatcher> excludedApiTokenPaths = Arrays.asList(
             new AntPathRequestMatcher("/oauth/token", HttpMethod.POST.toString()),
             new AntPathRequestMatcher("/oauth/resource", HttpMethod.POST.toString())
     );
