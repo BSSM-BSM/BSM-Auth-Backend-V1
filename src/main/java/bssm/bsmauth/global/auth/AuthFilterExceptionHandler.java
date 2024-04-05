@@ -2,6 +2,7 @@ package bssm.bsmauth.global.auth;
 
 import bssm.bsmauth.global.error.HttpError;
 import bssm.bsmauth.global.error.HttpErrorResponse;
+import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,28 @@ public class AuthFilterExceptionHandler extends OncePerRequestFilter {
             filterChain.doFilter(req, res);
         } catch (HttpError e) {
             exceptionHandler(res, e);
+        } catch (Exception e) {
+            exceptionHandler(res);
         }
     }
 
     private void exceptionHandler(HttpServletResponse res, HttpError exception) {
-        res.setStatus(exception.getStatusCode());
         res.setContentType("application/json;charset=UTF-8");
+        res.setStatus(exception.getStatusCode());
         try {
             res.getWriter().write(objectMapper.writeValueAsString(new HttpErrorResponse(exception)));
+            res.getWriter().flush();
+            res.getWriter().close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void exceptionHandler(HttpServletResponse res) {
+        res.setContentType("application/json;charset=UTF-8");
+        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        try {
+            res.getWriter().write(objectMapper.writeValueAsString(new HttpErrorResponse(new UnAuthorizedException())));
             res.getWriter().flush();
             res.getWriter().close();
         } catch (IOException e) {
