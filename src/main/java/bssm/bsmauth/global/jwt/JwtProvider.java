@@ -67,22 +67,4 @@ public class JwtProvider {
                 .signWith(Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
-
-    public String getRefreshToken(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.get("token", String.class);
-    }
-
-    public Long getUserCode(String token) {
-        Claims claims = extractAllClaims(token);
-        return claims.get("code", Long.class);
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(JWT_SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
 }

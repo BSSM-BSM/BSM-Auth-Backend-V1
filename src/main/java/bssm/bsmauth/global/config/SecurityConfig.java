@@ -3,7 +3,7 @@ package bssm.bsmauth.global.config;
 import bssm.bsmauth.global.auth.AuthFilterExceptionHandler;
 import bssm.bsmauth.global.error.HttpErrorResponse;
 import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
-import bssm.bsmauth.global.jwt.JwtAuthFilter;
+import bssm.bsmauth.global.auth.AuthFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final AuthFilter authFilter;
     private final AuthFilterExceptionHandler authFilterExceptionHandler;
     private final ObjectMapper objectMapper;
 
@@ -64,7 +64,7 @@ public class SecurityConfig {
                 .formLogin().disable();
 
         http
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authFilterExceptionHandler, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

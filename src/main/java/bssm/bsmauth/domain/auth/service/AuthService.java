@@ -24,6 +24,7 @@ import bssm.bsmauth.global.error.exceptions.BadRequestException;
 import bssm.bsmauth.global.error.exceptions.ConflictException;
 import bssm.bsmauth.global.jwt.JwtProvider;
 import bssm.bsmauth.global.cookie.CookieProvider;
+import bssm.bsmauth.global.jwt.JwtResolver;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +47,7 @@ public class AuthService {
     private final CurrentUser currentUser;
     private final UserFacade userFacade;
     private final JwtProvider jwtProvider;
+    private final JwtResolver jwtResolver;
     private final CookieProvider cookieProvider;
 
     private final UserRepository userRepository;
@@ -160,7 +162,7 @@ public class AuthService {
         if (refreshTokenCookie == null) return;
 
         try {
-            String refreshToken = jwtProvider.getRefreshToken(refreshTokenCookie.getValue());
+            String refreshToken = jwtResolver.getRefreshToken(refreshTokenCookie.getValue());
             refreshTokenRepository.findById(refreshToken)
                     .ifPresent(token -> token.setAvailable(false));
         } catch (Exception ignored) {}

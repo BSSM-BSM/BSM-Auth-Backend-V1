@@ -1,10 +1,11 @@
-package bssm.bsmauth.global.jwt;
+package bssm.bsmauth.global.auth;
 
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.facade.UserFacade;
-import bssm.bsmauth.global.auth.AuthDetailsService;
 import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
 import bssm.bsmauth.global.cookie.CookieProvider;
+import bssm.bsmauth.global.jwt.JwtProvider;
+import bssm.bsmauth.global.jwt.JwtResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -24,10 +25,11 @@ import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class AuthFilter extends OncePerRequestFilter {
 
     private final UserFacade userFacade;
-    private final JwtProvider jwtUtil;
+    private final JwtProvider jwtProvider;
+    private final JwtResolver jwtResolver;
     private final CookieProvider cookieProvider;
     private final AuthDetailsService authDetailsService;
 
@@ -49,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void authentication(String token) {
-        Long userCode = jwtUtil.getUserCode(token);
+        Long userCode = jwtResolver.getUserCode(token);
         UserDetails userDetails = authDetailsService.loadUserByUsername(String.valueOf(userCode));
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -69,12 +71,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
         try {
-            String refreshToken = jwtUtil.getRefreshToken(refreshTokenCookie.getValue());
+            String refreshToken = jwtResolver.getRefreshToken(refreshTokenCookie.getValue());
             // DB에서 사용할 수 있는지 확인
             User user = userFacade.findByRefreshToken(refreshToken);
 
             // 새 엑세스 토큰 발급
-            String newToken = jwtUtil.createAccessToken(user);
+            String newToken = jwtProvider.createAccessToken(user);
             // 쿠키 생성 및 적용
             ResponseCookie newTokenCookie = cookieProvider.createCookie(TOKEN_COOKIE_NAME, newToken, JWT_TOKEN_MAX_TIME);
             res.addHeader(HttpHeaders.SET_COOKIE, newTokenCookie.toString());
