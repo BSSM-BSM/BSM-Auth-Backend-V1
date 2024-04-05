@@ -51,14 +51,20 @@ public class AuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
-        for (RequestMatcher requestMatcher : RequestPath.ignoringPaths) {
+        for (RequestMatcher requestMatcher : RequestPath.excludedApiTokenPaths) {
             if (requestMatcher.matches(req)) {
                 filterChain.doFilter(req, res);
                 return;
             }
         }
-
         checkApiToken(req);
+
+        for (RequestMatcher requestMatcher : RequestPath.excludedAuthTokenPaths) {
+            if (requestMatcher.matches(req)) {
+                filterChain.doFilter(req, res);
+                return;
+            }
+        }
         try {
             accessTokenCheck(req);
         } catch (Exception e) {

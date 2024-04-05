@@ -30,12 +30,6 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers(RequestPath.ignoringPaths.toArray(RequestMatcher[]::new));
-    }
-
-    @Bean
     public AuthenticationEntryPoint authenticationEntryPoint() {
         return (req, res, e) -> {
             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -58,6 +52,7 @@ public class SecurityConfig {
                 .exceptionHandling()
                     .authenticationEntryPoint(authenticationEntryPoint())
                 .and().authorizeRequests()
+                .requestMatchers(RequestPath.excludedAuthTokenPaths.toArray(RequestMatcher[]::new)).permitAll()
                 .anyRequest().authenticated();
 
         http
