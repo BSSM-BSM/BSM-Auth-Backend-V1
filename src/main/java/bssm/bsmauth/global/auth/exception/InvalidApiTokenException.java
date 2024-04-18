@@ -1,9 +1,34 @@
 package bssm.bsmauth.global.auth.exception;
 
-import bssm.bsmauth.global.error.exceptions.ForbiddenException;
+import bssm.bsmauth.global.error.exceptions.BadRequestException;
+import com.google.common.collect.ImmutableMap;
 
-public class InvalidApiTokenException extends ForbiddenException {
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+public class InvalidApiTokenException extends BadRequestException {
+
+    private static Map<String, String> createMsg() {
+        return ImmutableMap.<String, String>builder()
+                .put("errorType", "apiTokenFail")
+                .build();
+    }
+
+    private static Map<String, String> createMsg(ZonedDateTime serverTime, ZonedDateTime clientTime) {
+        return ImmutableMap.<String, String>builder()
+                .put("errorType", "apiTokenFail")
+                .put("serverTime", serverTime.format(DateTimeFormatter.ISO_INSTANT))
+                .put("clientTime", clientTime.format(DateTimeFormatter.ISO_INSTANT))
+                .build();
+    }
+
+
     public InvalidApiTokenException() {
-        super("API 요청이 유효하지 않거나 만료되었습니다");
+        super(createMsg());
+    }
+
+    public InvalidApiTokenException(ZonedDateTime serverTime, ZonedDateTime clientTime) {
+        super(createMsg(serverTime, clientTime));
     }
 }

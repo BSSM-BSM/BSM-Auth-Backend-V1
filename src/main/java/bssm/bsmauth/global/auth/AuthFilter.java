@@ -78,6 +78,7 @@ public class AuthFilter extends OncePerRequestFilter {
     private void checkApiToken(HttpServletRequest rawReq) throws IOException {
         String apiToken = rawReq.getHeader(HEADER_NAME_API_TOKEN);
         ZonedDateTime clientRequestDateTime;
+        ZonedDateTime serverTime = ZonedDateTime.now();
         try {
             clientRequestDateTime = jwtResolver.getClientDateTime(apiToken);
         } catch (Exception e) {
@@ -85,9 +86,9 @@ public class AuthFilter extends OncePerRequestFilter {
             throw new InvalidApiTokenException();
         }
         ZonedDateTime maxRequestDateTime = clientRequestDateTime.plusSeconds(API_TOKEN_MAX_TIME);
-        if (ZonedDateTime.now().isAfter(maxRequestDateTime)) {
+        if (serverTime.isBefore(clientRequestDateTime) || serverTime.isAfter(maxRequestDateTime)) {
             authLogger.recordApiTokenFailLog(rawReq);
-            throw new InvalidApiTokenException();
+            throw new InvalidApiTokenException(serverTime, clientRequestDateTime);
         }
     }
 
