@@ -86,7 +86,8 @@ public class AuthFilter extends OncePerRequestFilter {
             throw new InvalidApiTokenException();
         }
         ZonedDateTime maxRequestDateTime = clientRequestDateTime.plusSeconds(API_TOKEN_MAX_TIME);
-        if (serverTime.isBefore(clientRequestDateTime) || serverTime.isAfter(maxRequestDateTime)) {
+        ZonedDateTime minRequestDateTime = clientRequestDateTime.minusSeconds(API_TOKEN_MAX_TIME);
+        if (serverTime.isBefore(minRequestDateTime) || serverTime.isAfter(maxRequestDateTime)) {
             authLogger.recordApiTokenFailLog(rawReq);
             throw new InvalidApiTokenException(serverTime, clientRequestDateTime);
         }
