@@ -1,5 +1,6 @@
 package bssm.bsmauth.global.auth;
 
+import bssm.bsmauth.domain.auth.log.AuthLogger;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.global.auth.constant.RequestPath;
@@ -36,6 +37,7 @@ public class AuthFilter extends OncePerRequestFilter {
     private final JwtResolver jwtResolver;
     private final CookieProvider cookieProvider;
     private final AuthDetailsService authDetailsService;
+    private final AuthLogger authLogger;
 
     @Value("${env.cookie.name.token}")
     private String TOKEN_COOKIE_NAME;
@@ -50,45 +52,47 @@ public class AuthFilter extends OncePerRequestFilter {
     private long API_TOKEN_MAX_TIME;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest rawReq, HttpServletResponse rawRes, FilterChain filterChain) throws ServletException, IOException {
         for (RequestMatcher requestMatcher : RequestPath.excludedApiTokenPaths) {
-            if (requestMatcher.matches(req)) {
-                filterChain.doFilter(req, res);
+            if (requestMatcher.matches(rawReq)) {
+                filterChain.doFilter(rawReq, rawRes);
                 return;
             }
         }
-        checkApiToken(req);
+        checkApiToken(rawReq);
 
         for (RequestMatcher requestMatcher : RequestPath.excludedAuthTokenPaths) {
-            if (requestMatcher.matches(req)) {
-                filterChain.doFilter(req, res);
+            if (requestMatcher.matches(rawReq)) {
+                filterChain.doFilter(rawReq, rawRes);
                 return;
             }
         }
         try {
-            accessTokenCheck(req);
+            accessTokenCheck(rawReq);
         } catch (Exception e) {
-            refreshTokenCheck(req, res);
+            refreshTokenCheck(rawReq, rawRes);
         }
-        filterChain.doFilter(req, res);
+        filterChain.doFilter(rawReq, rawRes);
     }
 
-    private void checkApiToken(HttpServletRequest req) {
-        String apiToken = req.getHeader(HEADER_NAME_API_TOKEN);
+    private void checkApiToken(HttpServletRequest rawReq) throws IOException {
+        String apiToken = rawReq.getHeader(HEADER_NAME_API_TOKEN);
         ZonedDateTime clientRequestDateTime;
         try {
             clientRequestDateTime = jwtResolver.getClientDateTime(apiToken);
         } catch (Exception e) {
+            authLogger.recordApiTokenFailLog(rawReq);
             throw new InvalidApiTokenException();
         }
         ZonedDateTime maxRequestDateTime = clientRequestDateTime.plusSeconds(API_TOKEN_MAX_TIME);
         if (ZonedDateTime.now().isAfter(maxRequestDateTime)) {
+            authLogger.recordApiTokenFailLog(rawReq);
             throw new InvalidApiTokenException();
         }
     }
 
-    private void accessTokenCheck(HttpServletRequest req) {
-        Cookie tokenCookie = cookieProvider.findCookie(req, TOKEN_COOKIE_NAME);
+    private void accessTokenCheck(HttpServletRequest rawReq) {
+        Cookie tokenCookie = cookieProvider.findCookie(rawReq, TOKEN_COOKIE_NAME);
         String token = tokenCookie.getValue();
         authentication(token);
     }
@@ -100,8 +104,8 @@ public class AuthFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private void refreshTokenCheck(HttpServletRequest req, HttpServletResponse res) {
-        Cookie refreshTokenCookie = cookieProvider.findCookie(req, REFRESH_TOKEN_COOKIE_NAME);
+    private void refreshTokenCheck(HttpServletRequest rawReq, HttpServletResponse res) {
+        Cookie refreshTokenCookie = cookieProvider.findCookie(rawReq, REFRESH_TOKEN_COOKIE_NAME);
         // 엑세스 토큰 인증에 실패했으면서 리프레시 토큰도 없으면 인증 실패
         if (refreshTokenCookie == null) {
             res.addHeader(HttpHeaders.SET_COOKIE, cookieProvider.createCookie(TOKEN_COOKIE_NAME, "", 0).toString());

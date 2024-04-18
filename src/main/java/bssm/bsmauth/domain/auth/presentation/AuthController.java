@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("auth")
@@ -20,8 +21,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("login")
-    public AuthTokenRes login(@Valid @RequestBody LoginReq req, HttpServletResponse res) {
-        return authService.loginPostProcess(res, authService.login(req));
+    public AuthTokenRes login(@Valid @RequestBody LoginReq req, HttpServletRequest rawReq, HttpServletResponse rawRes) throws IOException {
+        return authService.loginPostProcess(rawRes, authService.login(rawReq, req));
     }
 
     @DeleteMapping("logout")

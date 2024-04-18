@@ -32,6 +32,9 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 
+	//hibernate type
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-55:3.7.3'
+
 	// querydsl
 	implementation 'com.querydsl:querydsl-jpa'
 	implementation 'com.querydsl:querydsl-apt'
@@ -43,7 +46,6 @@ dependencies {
 
 	// mysql
 	runtimeOnly 'mysql:mysql-connector-java'
-
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
