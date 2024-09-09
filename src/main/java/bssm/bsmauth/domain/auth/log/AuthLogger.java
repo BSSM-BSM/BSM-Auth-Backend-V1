@@ -9,8 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @Service
@@ -44,7 +44,6 @@ public class AuthLogger {
             String accessToken = cookieProvider.findCookie(rawReq, TOKEN_COOKIE_NAME).getValue();
             Long userCode = jwtResolver.getUserCode(accessToken);
             User user = userFacade.findByCode(userCode);
-
             authLog.setUser(user);
             authLog.getContent().put("accessToken", accessToken);
         } catch (Exception ignored) {}
@@ -52,8 +51,10 @@ public class AuthLogger {
         try {
             Cookie refreshTokenCookie = cookieProvider.findCookie(rawReq, REFRESH_TOKEN_COOKIE_NAME);
             String refreshToken = jwtResolver.getRefreshToken(refreshTokenCookie.getValue());
-
             authLog.getContent().put("refreshToken", refreshToken);
+
+            User user = userFacade.findByRefreshToken(refreshToken);
+            authLog.setUser(user);
         } catch (Exception ignored) {}
 
         String apiToken = rawReq.getHeader(HEADER_NAME_API_TOKEN);

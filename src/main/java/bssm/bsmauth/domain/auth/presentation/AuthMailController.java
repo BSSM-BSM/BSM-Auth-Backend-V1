@@ -8,7 +8,7 @@ import bssm.bsmauth.domain.user.presentation.dto.req.student.FindStudentReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("auth/mail")

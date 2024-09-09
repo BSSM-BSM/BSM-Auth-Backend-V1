@@ -3,7 +3,7 @@ package bssm.bsmauth.domain.auth.domain;
 import bssm.bsmauth.domain.user.domain.User;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Getter

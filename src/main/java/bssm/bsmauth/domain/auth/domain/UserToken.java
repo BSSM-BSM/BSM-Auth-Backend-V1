@@ -6,7 +6,7 @@ import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 @Getter

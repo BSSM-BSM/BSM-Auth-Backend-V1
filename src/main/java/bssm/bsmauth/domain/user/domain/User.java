@@ -10,7 +10,7 @@ import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

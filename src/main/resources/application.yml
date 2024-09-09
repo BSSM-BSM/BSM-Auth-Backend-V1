@@ -15,6 +15,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
   datasource:
     url: jdbc:mysql://${env.db.host}:${env.db.port}/${env.db.name}?autoReconnect=true

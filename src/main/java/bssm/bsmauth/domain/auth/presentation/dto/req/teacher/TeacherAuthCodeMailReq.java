@@ -2,7 +2,7 @@ package bssm.bsmauth.domain.auth.presentation.dto.req.teacher;
 
 import lombok.Getter;
 
-import javax.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
 
 @Getter
 public class TeacherAuthCodeMailReq {

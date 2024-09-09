@@ -5,7 +5,7 @@ import bssm.bsmauth.global.entity.BaseTimeEntity;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Getter
 @Entity

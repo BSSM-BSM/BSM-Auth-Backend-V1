@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -43,17 +43,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .httpBasic().disable()
-                .cors().disable()
-                .csrf().disable()
-                .formLogin().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .exceptionHandling()
-                    .authenticationEntryPoint(authenticationEntryPoint())
-                .and().authorizeRequests()
-                .requestMatchers(RequestPath.excludedAuthTokenPaths.toArray(RequestMatcher[]::new)).permitAll()
-                .anyRequest().authenticated();
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .sessionManagement((configure -> {
+                    configure.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                }))
+                .exceptionHandling(configure -> {
+                    configure.authenticationEntryPoint(authenticationEntryPoint());
+                })
+                .authorizeHttpRequests(configure -> {
+                    configure.requestMatchers(RequestPath.excludedAuthTokenPaths.toArray(RequestMatcher[]::new)).permitAll();
+                    configure.anyRequest().authenticated();
+                });
 
         http
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)

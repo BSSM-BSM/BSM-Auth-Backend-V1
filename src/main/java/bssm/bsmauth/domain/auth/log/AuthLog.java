@@ -2,21 +2,19 @@ package bssm.bsmauth.domain.auth.log;
 
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
+import io.hypersistence.utils.hibernate.type.json.JsonStringType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.util.StreamUtils;
 
-import javax.persistence.*;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.persistence.*;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 
 @Getter
 @Entity
-@TypeDef(name = "json", typeClass = JsonType.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthLog extends BaseTimeEntity {
 
@@ -41,8 +38,8 @@ public class AuthLog extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private AuthLogType type;
 
-    @Type(type = "json")
     @Column(columnDefinition = "LONGTEXT")
+    @Type(JsonStringType.class)
     private final Map<String, Object> content = new HashMap<>();
 
     @Setter
