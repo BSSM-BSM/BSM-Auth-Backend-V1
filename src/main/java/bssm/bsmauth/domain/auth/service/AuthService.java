@@ -11,7 +11,6 @@ import bssm.bsmauth.domain.auth.exception.AlreadyUsedAuthCodeException;
 import bssm.bsmauth.domain.auth.exception.InvalidCredentialsException;
 import bssm.bsmauth.domain.auth.exception.NoSuchAuthCodeException;
 import bssm.bsmauth.domain.auth.exception.NoSuchTokenException;
-import bssm.bsmauth.domain.auth.log.AuthLogger;
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
 import bssm.bsmauth.domain.user.domain.*;
 import bssm.bsmauth.domain.user.domain.repository.*;
@@ -51,7 +50,6 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final JwtResolver jwtResolver;
     private final CookieProvider cookieProvider;
-    private final AuthLogger authLogger;
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -125,15 +123,12 @@ public class AuthService {
     public User login(HttpServletRequest rawReq, LoginReq req) throws IOException {
         User user = userFacade.findByUserIdOrNull(req.getId());
         if (user == null) {
-            authLogger.recordLoginFailLog(rawReq, null, req.getId(), "notFoundUser");
             throw new InvalidCredentialsException();
         }
         if (user.checkAccountLock()) {
-            authLogger.recordLoginFailLog(rawReq, null, req.getId(), "lockedAccount");
             throw new AccountRecoveryRequiredException();
         }
         if (!user.validatePw(req.getPw())) {
-            authLogger.recordLoginFailLog(rawReq, null, req.getId(), "invalidPassword");
             user.incrementFailedLoginAttempts();
             throw new InvalidCredentialsException();
         }

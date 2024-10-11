@@ -1,6 +1,5 @@
 package bssm.bsmauth.global.auth;
 
-import bssm.bsmauth.domain.auth.log.AuthLogger;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.facade.UserFacade;
 import bssm.bsmauth.global.auth.constant.RequestPath;
@@ -37,7 +36,6 @@ public class AuthFilter extends OncePerRequestFilter {
     private final JwtResolver jwtResolver;
     private final CookieProvider cookieProvider;
     private final AuthDetailsService authDetailsService;
-    private final AuthLogger authLogger;
 
     @Value("${env.cookie.name.token}")
     private String TOKEN_COOKIE_NAME;
@@ -82,13 +80,11 @@ public class AuthFilter extends OncePerRequestFilter {
         try {
             clientRequestDateTime = jwtResolver.getClientDateTime(apiToken);
         } catch (Exception e) {
-            authLogger.recordApiTokenFailLog(rawReq);
             throw new InvalidApiTokenException();
         }
         ZonedDateTime maxRequestDateTime = clientRequestDateTime.plusSeconds(API_TOKEN_MAX_TIME);
         ZonedDateTime minRequestDateTime = clientRequestDateTime.minusSeconds(API_TOKEN_MAX_TIME);
         if (serverTime.isBefore(minRequestDateTime) || serverTime.isAfter(maxRequestDateTime)) {
-            authLogger.recordApiTokenFailLog(rawReq);
             throw new InvalidApiTokenException(serverTime, clientRequestDateTime);
         }
     }
