@@ -48,7 +48,7 @@ services:
       COOKIE_SECURE: false
       ACCESS_TOKEN_COOKIE_NAME: token
       REFRESH_TOKEN_COOKIE_NAME: refresh_token
-      COOKIE_SAME_SITE: None
+      COOKIE_SAME_SITE: Strict
       FILE_BASE_PATH: /app/resource/
       FILE_PUBLIC_BASE_PATH: http://localhost:8080/resource/
       PROFILE_FILE_UPLOAD_PATH: user/profile/
