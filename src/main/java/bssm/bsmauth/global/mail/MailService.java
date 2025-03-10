@@ -17,7 +17,7 @@ import jakarta.mail.internet.MimeUtility;
 public class MailService {
 
     private final JavaMailSender javaMailSender;
-    @Value("${env.mail.from}")
+    @Value("${mail.from}")
     private String MAIL_FROM;
 
     public void sendMail(MailDto mailDto) {

@@ -36,11 +36,11 @@ public class UserService {
     private final UserRepository userRepository;
     private final ForbiddenNicknameRepository forbiddenNicknameRepository;
 
-    @Value("${env.file.path.base}")
+    @Value("${file.path.base}")
     private String REAL_RESOURCE_PATH;
-    @Value("${env.file.path.publicBase}")
+    @Value("${file.path.public-base}")
     private String PUBLIC_RESOURCE_PATH;
-    @Value("${env.file.path.upload.profile}")
+    @Value("${file.path.upload.profile}")
     private String PROFILE_UPLOAD_RESOURCE_PATH;
 
     public UserRes findMyInfo() {

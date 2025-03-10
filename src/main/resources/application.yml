@@ -1,12 +1,9 @@
 server:
-  port: ${env.server.port}
   servlet:
     contextPath: /api
 spring:
   main:
     allow-bean-definition-overriding: true
-  config:
-    import: classpath:/env.yml
   jpa:
     database: mysql
     show-sql: true
@@ -18,14 +15,30 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
   datasource:
-    url: jdbc:mysql://${env.db.host}:${env.db.port}/${env.db.name}?autoReconnect=true
-    username: ${env.db.user}
-    password: ${env.db.pw}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?autoReconnect=true
+    username: ${DB_USER}
+    password: ${DB_PW}
     driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
-    host: ${env.redis.host}
-    port: ${env.redis.port}
-    database: ${env.redis.database}
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    database: ${REDIS_DB}
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIN_USERNAME}
+    password: ${MAIN_PW}
+    transport:
+      protocol: smtp
+    default:
+      encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIN_SMTP_AUTH}
+          timeout: 10000
+          starttls:
+            enable: true
 logging:
   level:
     web: DEBUG
@@ -35,23 +48,30 @@ logging:
       type:
         descriptor:
           BasicBinder: TRACE
-
 ---
-
-spring:
-  mail:
-    host: ${env.mail.host}
-    port: ${env.mail.port}
-    username: ${env.mail.username}
-    password: ${env.mail.password}
-    transport:
-      protocol: smtp
-    default:
-      encoding: UTF-8
-    properties:
-      mail:
-        smtp:
-          auth: ${env.mail.auth}
-          timeout: 10000
-          starttls:
-            enable: true
+jwt:
+  secret-key:
+    auth: ${JWT_AUTH_SECRET_KEY}
+    api-token: ${JWT_API_SECRET_KEY}
+  time:
+    token: ${JWT_ACCESS_TOKEN_ALIVE_TIME}
+    refresh-token: ${JWT_REFRESH_TOKEN_ALIVE_TIME}
+    api-token: ${JWT_API_TOKEN_ALIVE_TIME}
+header:
+  name:
+    api-token: ${API_TOKEN_HEADER_NAME}
+cookie:
+  domain:
+  secure: ${COOKIE_SECURE}
+  name:
+    token: ${ACCESS_TOKEN_COOKIE_NAME}
+    refresh-token: ${REFRESH_TOKEN_COOKIE_NAME}
+  same-site: ${COOKIE_SAME_SITE}
+file:
+  path:
+    base: ${FILE_BASE_PATH}
+    public-base: ${FILE_PUBLIC_BASE_PATH}
+    upload:
+      profile: ${PROFILE_FILE_UPLOAD_PATH}
+mail:
+  from: ${MAIL_FROM}

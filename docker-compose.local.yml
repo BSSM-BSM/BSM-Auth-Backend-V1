@@ -1,0 +1,86 @@
+name: bsm-auth-backend
+
+services:
+  nginx:
+    container_name: bsm-auth-backend-proxy
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./.docker-data/public:/app/public:ro
+    ports:
+      - '8080:80'
+    networks:
+      - reverse-proxy
+    depends_on:
+      - app
+  app:
+    container_name: bsm-auth-backend
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./.docker-data/public/resource:/app/resource
+    expose:
+      - '8080:8080'
+    networks:
+      - backend
+      - reverse-proxy
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: bsm_auth
+      DB_USER: bsm_auth
+      DB_PW: bsm_auth
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      JWT_AUTH_SECRET_KEY: JWT_AUTH_SECRET_KEY
+      JWT_API_SECRET_KEY: JWT_API_SECRET_KEY
+      JWT_ACCESS_TOKEN_ALIVE_TIME: 600
+      JWT_REFRESH_TOKEN_ALIVE_TIME: 5184000
+      JWT_API_TOKEN_ALIVE_TIME: 120
+      API_TOKEN_HEADER_NAME: x-api-token
+      COOKIE_SECURE: false
+      ACCESS_TOKEN_COOKIE_NAME: token
+      REFRESH_TOKEN_COOKIE_NAME: refresh_token
+      COOKIE_SAME_SITE: None
+      FILE_BASE_PATH: /app/resource/
+      FILE_PUBLIC_BASE_PATH: http://localhost:8080/resource/
+      PROFILE_FILE_UPLOAD_PATH: user/profile/
+  db:
+    container_name: bsm-auth-backend-db
+    image: mysql:8.0
+    restart: always
+    volumes:
+      - ./.docker-data/mysql/config:/etc/mysql/conf.d
+      - ./.docker-data/mysql/data:/var/lib/mysql
+    expose:
+      - '3306:3306'
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: bsm_auth
+      MYSQL_DATABASE: bsm_auth
+      MYSQL_USER: bsm_auth
+      MYSQL_PASSWORD: bsm_auth
+  redis:
+    container_name: bsm-auth-backend-redis
+    image: redis:latest
+    restart: always
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ./.docker-data/redis/config/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./.docker-data/redis/data:/data
+    expose:
+      - '6379:6379'
+    networks:
+      - backend
+
+networks:
+  backend: {}
+  reverse-proxy: {}

@@ -16,10 +16,10 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 public class JwtResolver {
 
-    @Value("${env.jwt.secret-key.auth}")
+    @Value("${jwt.secret-key.auth}")
     private String JWT_AUTH_SECRET_KEY;
 
-    @Value("${env.jwt.secret-key.api-token}")
+    @Value("${jwt.secret-key.api-token}")
     private String JWT_API_TOKEN_SECRET_KEY;
 
     public String getRefreshToken(String token) {

@@ -24,11 +24,11 @@ public class JwtProvider {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserFacade userFacade;
 
-    @Value("${env.jwt.secret-key.auth}")
+    @Value("${jwt.secret-key.auth}")
     private String JWT_AUTH_SECRET_KEY;
-    @Value("${env.jwt.time.token}")
+    @Value("${jwt.time.token}")
     private long JWT_TOKEN_MAX_TIME;
-    @Value("${env.jwt.time.refreshToken}")
+    @Value("${jwt.time.refresh-token}")
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     public String createAccessToken(User user) {

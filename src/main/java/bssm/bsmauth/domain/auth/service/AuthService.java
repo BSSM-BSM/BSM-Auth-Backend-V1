@@ -59,13 +59,13 @@ public class AuthService {
     private final TeacherAuthCodeRepository teacherAuthCodeRepository;
     private final ForbiddenNicknameRepository forbiddenNicknameRepository;
 
-    @Value("${env.cookie.name.token}")
+    @Value("${cookie.name.token}")
     private String TOKEN_COOKIE_NAME;
-    @Value("${env.cookie.name.refreshToken}")
+    @Value("${cookie.name.refresh-token}")
     private String REFRESH_TOKEN_COOKIE_NAME;
-    @Value("${env.jwt.time.token}")
+    @Value("${jwt.time.token}")
     private long JWT_TOKEN_MAX_TIME;
-    @Value("${env.jwt.time.refreshToken}")
+    @Value("${jwt.time.refresh-token}")
     private long JWT_REFRESH_TOKEN_MAX_TIME;
 
     @Transactional
