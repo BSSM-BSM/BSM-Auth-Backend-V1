@@ -18,9 +18,7 @@ public class UserCache {
     private String authId;
     private String nickname;
     private UserRole role;
-    private String studentId;
     private Student student;
-    private Long teacherId;
     private Teacher teacher;
 
     public static UserCache create(User user) {
@@ -29,9 +27,7 @@ public class UserCache {
         userCache.authId = user.getAuthId();
         userCache.nickname = user.getNickname();
         userCache.role = user.getRole();
-        userCache.studentId = user.getStudentId();
         userCache.student = user.getStudent();
-        userCache.teacherId = user.getTeacherId();
         userCache.teacher = user.getTeacher();
         return userCache;
     }

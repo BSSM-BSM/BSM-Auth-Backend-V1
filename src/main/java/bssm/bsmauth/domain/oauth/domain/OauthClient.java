@@ -30,7 +30,7 @@ public class OauthClient extends BaseTimeEntity {
     private String serviceName;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(length = 12, nullable = false)

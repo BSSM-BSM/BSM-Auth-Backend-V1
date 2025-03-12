@@ -2,7 +2,10 @@ package bssm.bsmauth.domain.oauth.domain;
 
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.*;
@@ -16,25 +19,21 @@ public class OauthAuthCode extends BaseTimeEntity {
     @Column(length = 32)
     private String code;
 
-    @Column(length = 8, insertable = false, updatable = false)
-    private String clientId;
-
     @ManyToOne
-    @JoinColumn(name = "clientId")
+    @JoinColumn(name = "client_id", nullable = false)
     private OauthClient oauthClient;
 
-    @Column(name = "isExpire", nullable = false)
+    @Column(name = "is_expired", nullable = false)
     @ColumnDefault("0")
     private boolean expire;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Builder
-    public OauthAuthCode(String code, String clientId, OauthClient oauthClient, boolean expire, User user) {
+    public OauthAuthCode(String code, OauthClient oauthClient, boolean expire, User user) {
         this.code = code;
-        this.clientId = clientId;
         this.oauthClient = oauthClient;
         this.expire = expire;
         this.user = user;

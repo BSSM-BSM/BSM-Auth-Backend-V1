@@ -1,5 +1,6 @@
 package bssm.bsmauth.domain.oauth.domain.repository;
 
+import bssm.bsmauth.domain.oauth.domain.OauthClient;
 import bssm.bsmauth.domain.oauth.domain.OauthToken;
 import bssm.bsmauth.domain.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface OauthTokenRepository extends JpaRepository<OauthToken, String> {
 
-    Optional<OauthToken> findByUserAndClientId(User user, String clientId);
+    Optional<OauthToken> findByUserAndOauthClient(User user, OauthClient oauthClient);
 
-    Optional<OauthToken> findByTokenAndExpire(String token, boolean expire);
+    Optional<OauthToken> findByTokenAndIsExpired(String token, boolean isExpired);
 }

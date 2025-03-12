@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface OauthAuthCodeRepository extends JpaRepository<OauthAuthCode, String> {
 
-    Optional<OauthAuthCode> findByCodeAndExpire(String id, boolean expire);
+    Optional<OauthAuthCode> findByCodeAndExpire(String code, boolean expire);
 }

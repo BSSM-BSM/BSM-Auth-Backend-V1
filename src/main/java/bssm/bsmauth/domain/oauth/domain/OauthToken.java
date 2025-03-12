@@ -2,10 +2,17 @@ package bssm.bsmauth.domain.oauth.domain;
 
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.domain.user.domain.User;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
-import jakarta.persistence.*;
 
 @Getter
 @Entity
@@ -16,27 +23,23 @@ public class OauthToken extends BaseTimeEntity {
     @Column(length = 32)
     private String token;
 
-    @Column(length = 8, insertable = false, updatable = false)
-    private String clientId;
-
     @ManyToOne
-    @JoinColumn(name = "clientId")
+    @JoinColumn(name = "client_id", nullable = false)
     private OauthClient oauthClient;
 
-    @Column(name = "isExpire", nullable = false)
+    @Column(name = "is_expire", nullable = false)
     @ColumnDefault("0")
-    private boolean expire;
+    private boolean isExpired;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Builder
-    public OauthToken(String token, String clientId, OauthClient oauthClient, boolean expire, User user) {
+    public OauthToken(String token, OauthClient oauthClient, boolean isExpired, User user) {
         this.token = token;
-        this.clientId = clientId;
         this.oauthClient = oauthClient;
-        this.expire = expire;
+        this.isExpired = isExpired;
         this.user = user;
     }
 }

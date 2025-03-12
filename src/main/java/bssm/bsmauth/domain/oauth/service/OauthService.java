@@ -41,7 +41,7 @@ public class OauthService {
         OauthClient client = oauthFacade.checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
-        if (oauthTokenRepository.findByUserAndClientId(user, clientId).isPresent()) {
+        if (oauthTokenRepository.findByUserAndOauthClient(user, client).isPresent()) {
             return OauthAuthenticationRes.builder()
                     .authorized(true)
                     .domain(client.getDomain())
@@ -91,7 +91,7 @@ public class OauthService {
         authCode.expire();
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUserAndClientId(authCode.getUser(), req.getClientId());
+        Optional<OauthToken> token = oauthTokenRepository.findByUserAndOauthClient(authCode.getUser(), client);
         if (token.isPresent()) {
             return OauthTokenRes.builder()
                     .token(token.get().getToken())
@@ -111,7 +111,7 @@ public class OauthService {
     }
 
     public OauthResourceRes getResource(OauthGetResourceReq req) {
-        OauthToken token = oauthTokenRepository.findByTokenAndExpire(req.getToken(), false)
+        OauthToken token = oauthTokenRepository.findByTokenAndIsExpired(req.getToken(), false)
                 .orElseThrow(NoSuchTokenException::new);
         OauthClient client = token.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {

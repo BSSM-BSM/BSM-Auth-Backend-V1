@@ -20,7 +20,7 @@ public class UserToken extends BaseTimeEntity {
     @Column(length = 32)
     private String token;
 
-    @Column(name = "isUsed", nullable = false)
+    @Column(name = "is_used", nullable = false)
     private boolean used;
 
     @Column(nullable = false)

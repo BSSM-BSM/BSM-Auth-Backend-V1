@@ -33,18 +33,12 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Column(length = 10)
-    private String studentId;
-
     @OneToOne
-    @JoinColumn(name = "studentId", insertable = false, updatable = false)
+    @JoinColumn(name = "student_id")
     private Student student;
 
-    @Column
-    private Long teacherId;
-
     @OneToOne
-    @JoinColumn(name = "teacherId", insertable = false, updatable = false)
+    @JoinColumn(name = "teacher_id")
     private Teacher teacher;
 
     @Column(nullable = false, length = 64)
@@ -127,9 +121,7 @@ public class User extends BaseTimeEntity {
         user.authId = userCache.getAuthId();
         user.nickname = userCache.getNickname();
         user.role = userCache.getRole();
-        user.studentId = userCache.getStudentId();
         user.student = userCache.getStudent();
-        user.teacherId = userCache.getTeacherId();
         user.teacher = userCache.getTeacher();
         return user;
     }
@@ -146,7 +138,6 @@ public class User extends BaseTimeEntity {
     public static User createStudent(Student student, String id, String pw, String nickname) {
         User user = createUser(id, pw, nickname);
         user.student = student;
-        user.studentId = student.getStudentId();
         user.role = UserRole.STUDENT;
         return user;
     }
@@ -154,7 +145,6 @@ public class User extends BaseTimeEntity {
     public static User createTeacher(Teacher teacher, String id, String pw, String nickname) {
         User user = createUser(id, pw, nickname);
         user.teacher = teacher;
-        user.teacherId = teacher.getTeacherId();
         user.role = UserRole.TEACHER;
         return user;
     }
