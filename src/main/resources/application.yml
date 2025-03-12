@@ -2,23 +2,13 @@ server:
   servlet:
     contextPath: /api
 spring:
-  main:
-    allow-bean-definition-overriding: true
-  jpa:
-    database: mysql
-    show-sql: true
-    generate-ddl: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
   datasource:
     url: jdbc:mariadb://${DB_HOST}:${DB_PORT}/${DB_NAME}?autoReconnect=true
     username: ${DB_USER}
     password: ${DB_PW}
     driver-class-name: org.mariadb.jdbc.Driver
+  jpa:
+    database: mysql
   redis:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
@@ -39,15 +29,6 @@ spring:
           timeout: 10000
           starttls:
             enable: true
-logging:
-  level:
-    web: DEBUG
-  org:
-    hibernate:
-      SQL: DEBUG
-      type:
-        descriptor:
-          BasicBinder: TRACE
 ---
 jwt:
   secret-key:
