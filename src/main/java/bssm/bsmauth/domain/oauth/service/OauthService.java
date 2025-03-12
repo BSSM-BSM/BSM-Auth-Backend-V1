@@ -41,7 +41,7 @@ public class OauthService {
         OauthClient client = oauthFacade.checkClient(user, clientId, redirectURI);
 
         // 이미 인증이 되었다면
-        if (oauthTokenRepository.findByUserCodeAndClientId(user.getCode(), clientId).isPresent()) {
+        if (oauthTokenRepository.findByUserAndClientId(user, clientId).isPresent()) {
             return OauthAuthenticationRes.builder()
                     .authorized(true)
                     .domain(client.getDomain())
@@ -62,12 +62,12 @@ public class OauthService {
     }
 
     public OauthAuthorizationRes authorization(OauthAuthorizationReq req) {
-        User user = currentUser.findCachedUser();
+        User user = currentUser.findUser();
         OauthClient client = oauthFacade.checkClient(user, req.getClientId(), req.getRedirectURI());
 
         OauthAuthCode authCode = OauthAuthCode.builder()
                 .code(SecurityUtil.getRandomString(32))
-                .userCode(user.getCode())
+                .user(user)
                 .oauthClient(client)
                 .build();
         oauthAuthCodeRepository.save(authCode);
@@ -78,9 +78,8 @@ public class OauthService {
     }
 
     public OauthTokenRes getToken(OauthGetTokenReq req) {
-        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(req.getAuthCode(), false).orElseThrow(
-                () -> {throw new NotFoundException("인증 코드를 찾을 수 없습니다");}
-        );
+        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(req.getAuthCode(), false)
+                .orElseThrow(() -> new NotFoundException("인증 코드를 찾을 수 없습니다"));
         OauthClient client = authCode.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
@@ -92,7 +91,7 @@ public class OauthService {
         authCode.expire();
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUserCodeAndClientId(authCode.getUserCode(), req.getClientId());
+        Optional<OauthToken> token = oauthTokenRepository.findByUserAndClientId(authCode.getUser(), req.getClientId());
         if (token.isPresent()) {
             return OauthTokenRes.builder()
                     .token(token.get().getToken())
@@ -101,7 +100,7 @@ public class OauthService {
 
         OauthToken newToken = OauthToken.builder()
                 .token(SecurityUtil.getRandomString(32))
-                .userCode(authCode.getUserCode())
+                .user(authCode.getUser())
                 .oauthClient(client)
                 .build();
         oauthTokenRepository.save(newToken);
@@ -122,7 +121,7 @@ public class OauthService {
             );
         }
 
-        User user = userRepository.findById(token.getUserCode())
+        User user = userRepository.findById(token.getUser().getId())
                 .orElseThrow(NoSuchUserException::new);
 
         List<OauthScope> scopeList = client.getScopes().stream()

@@ -21,9 +21,9 @@ public class UserFacade {
     private final RefreshTokenRepository refreshTokenRepository;
     private final NicknameHistoryRepository nicknameHistoryRepository;
 
-    public User findByUserIdOrNull(String userId) {
-        return userRepository.findById(userId)
-                .orElseGet(() -> null);
+    public User findByAuthIdOrNull(String authId) {
+        return userRepository.findByAuthId(authId)
+                .orElse(null);
     }
 
     public User findByRefreshToken(String refreshToken) {
@@ -32,19 +32,14 @@ public class UserFacade {
                 .getUser();
     }
 
-    public User findByCode(long userCode) {
-        return userRepository.findById(userCode)
+    public User findById(long userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(NoSuchUserException::new);
     }
 
-    public User findByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(NoSuchUserException::new);
-    }
-
-    public User findCachedUserByCode(long userCode) {
-        return userRedisRepository.findById(userCode)
-                .orElseGet(() -> findAndSaveUserCache(userCode))
+    public User findCachedUserById(long userId) {
+        return userRedisRepository.findById(userId)
+                .orElseGet(() -> findAndSaveUserCache(userId))
                 .toUser();
     }
 
@@ -52,8 +47,8 @@ public class UserFacade {
         userRedisRepository.save(user.toUserCache());
     }
 
-    private UserCache findAndSaveUserCache(long userCode) {
-        User user = findByCode(userCode);
+    private UserCache findAndSaveUserCache(long userId) {
+        User user = findById(userId);
         saveUserCache(user);
         return user.toUserCache();
     }

@@ -35,11 +35,11 @@ public class JwtProvider {
         userFacade.saveUserCache(user);
 
         Claims claims = Jwts.claims();
-        claims.put("code", user.getCode());
+        claims.put("id", user.getId());
         return createToken(claims, JWT_TOKEN_MAX_TIME);
     }
 
-    public String createRefreshToken(Long userCode) {
+    public String createRefreshToken(User user) {
         SecureRandom secureRandom = new SecureRandom();
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);
@@ -47,7 +47,7 @@ public class JwtProvider {
 
         RefreshToken newRefreshToken = RefreshToken.builder()
                 .token(newRandomToken)
-                .userCode(userCode)
+                .user(user)
                 .isAvailable(true)
                 .createdAt(new Date())
                 .build();

@@ -31,7 +31,7 @@ public class UserToken extends BaseTimeEntity {
     private UserTokenType type;
 
     @ManyToOne
-    @JoinColumn(name = "user_code")
+    @JoinColumn(name = "user_id")
     private User user;
 
     public void expire() {

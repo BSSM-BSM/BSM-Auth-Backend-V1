@@ -15,7 +15,10 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class OauthUserDto {
 
+    /** @deprecated id로 변경되었지만 하위호환 유지 필요 */
+    @Deprecated
     private Long code;
+    private Long id;
     private String nickname;
     private Boolean isGraduate;
     private Integer enrolledAt;
@@ -38,7 +41,10 @@ public class OauthUserDto {
 
     public void setData(OauthScope scope, User user) {
         switch (scope.getId()) {
-            case "code" -> this.code = user.getCode();
+            case "code" -> {
+                this.code = user.getId();
+                this.id = user.getId();
+            }
             case "nickname" -> this.nickname = user.getNickname();
             case "name" -> this.name = user.findNameOrNull();
             case "email" -> this.email = user.findEmailOrNull();
@@ -66,8 +72,8 @@ public class OauthUserDto {
 
     // 선생님 관련 데이터가 필요하면 사용 예정
     public void setTeacher(OauthScope scope, Teacher teacher) {
-        switch (scope.getId()) {
-            default -> {}
-        }
+//        switch (scope.getId()) {
+//            default -> {}
+//        }
     }
 }

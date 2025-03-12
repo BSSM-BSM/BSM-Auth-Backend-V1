@@ -27,9 +27,9 @@ public class JwtResolver {
         return claims.get("token", String.class);
     }
 
-    public Long getUserCode(String token) {
+    public Long getUserId(String token) {
         Claims claims = extractAllClaims(token, JWT_AUTH_SECRET_KEY);
-        return claims.get("code", Long.class);
+        return claims.get("id", Long.class);
     }
 
     public ZonedDateTime getClientDateTime(String token) {

@@ -78,7 +78,7 @@ public class AuthService {
         validateSignUp(req);
         student.expireAuthCode();
 
-        User user = User.createStudent(student, req.getId(), req.getPw(), req.getNickname());
+        User user = User.createStudent(student, req.getAuthId(), req.getPw(), req.getNickname());
         user = userRepository.save(user);
         userFacade.recordNicknameUpdate(user, req.getNickname());
     }
@@ -94,14 +94,14 @@ public class AuthService {
         teacherAuthCode.expire();
 
         Teacher teacher = teacherRepository.save(Teacher.create(req.getName(), teacherAuthCode.getEmail()));
-        User user = User.createTeacher(teacher, req.getId(), req.getPw(), req.getNickname());
+        User user = User.createTeacher(teacher, req.getAuthId(), req.getPw(), req.getNickname());
         user = userRepository.save(user);
         userFacade.recordNicknameUpdate(user, req.getNickname());
     }
 
     private void validateSignUp(UserSignUpReq req) {
         checkPasswordMatch(req.getPw(), req.getCheckPw());
-        userRepository.findById(req.getId())
+        userRepository.findByAuthId(req.getAuthId())
                 .ifPresent(u -> {throw new ConflictException("이미 존재하는 ID 입니다");});
         if (forbiddenNicknameRepository.existsByNickname(req.getNickname())) {
             throw new ForbiddenNicknameException();
@@ -121,7 +121,7 @@ public class AuthService {
 
     @Transactional(noRollbackFor = InvalidCredentialsException.class)
     public User login(HttpServletRequest rawReq, LoginReq req) throws IOException {
-        User user = userFacade.findByUserIdOrNull(req.getId());
+        User user = userFacade.findByAuthIdOrNull(req.getId());
         if (user == null) {
             throw new InvalidCredentialsException();
         }
@@ -139,7 +139,7 @@ public class AuthService {
     @Transactional
     public AuthTokenRes loginPostProcess(HttpServletResponse res, User user) {
         String token = jwtProvider.createAccessToken(user);
-        String refreshToken = jwtProvider.createRefreshToken(user.getCode());
+        String refreshToken = jwtProvider.createRefreshToken(user);
 
         ResponseCookie tokenCookie = cookieProvider.createCookie(TOKEN_COOKIE_NAME, token, JWT_TOKEN_MAX_TIME);
         ResponseCookie refreshTokenCookie = cookieProvider.createCookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, JWT_REFRESH_TOKEN_MAX_TIME);

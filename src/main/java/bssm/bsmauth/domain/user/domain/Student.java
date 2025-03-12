@@ -15,7 +15,7 @@ public class Student {
     @Column(length = 10)
     private String studentId;
 
-    @Column(columnDefinition = "INT(1) UNSIGNED", nullable = false)
+    @Column(nullable = false)
     private boolean codeAvailable;
 
     @Column(length = 8, nullable = false)

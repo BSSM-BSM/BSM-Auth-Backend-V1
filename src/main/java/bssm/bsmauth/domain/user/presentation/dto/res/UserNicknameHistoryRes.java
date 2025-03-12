@@ -16,7 +16,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserNicknameHistoryRes {
 
-    private Long code;
+    private Long id;
     private String nickname;
     private LocalDateTime createdAt;
     private String profileUrl;
@@ -27,7 +27,7 @@ public class UserNicknameHistoryRes {
 
     public static UserNicknameHistoryRes create(User user) {
         UserNicknameHistoryRes res = new UserNicknameHistoryRes();
-        res.code = user.getCode();
+        res.id = user.getId();
         res.nickname = user.getNickname();
         res.createdAt = user.getCreatedAt();
         res.profileUrl = user.getProfileUrl();

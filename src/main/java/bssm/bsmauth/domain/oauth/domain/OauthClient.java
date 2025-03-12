@@ -29,11 +29,8 @@ public class OauthClient extends BaseTimeEntity {
     @Column(nullable = false, length = 32)
     private String serviceName;
 
-    @Column(columnDefinition = "INT UNSIGNED")
-    private Long userCode;
-
     @ManyToOne
-    @JoinColumn(name = "userCode", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
     @Column(length = 12, nullable = false)
@@ -53,12 +50,11 @@ public class OauthClient extends BaseTimeEntity {
     private final Set<OauthToken> oauthTokens = new HashSet<>();
 
     @Builder
-    public OauthClient(String id, String clientSecret, String domain, String serviceName, Long userCode, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
+    public OauthClient(String id, String clientSecret, String domain, String serviceName, User user, OauthAccessType access, Set<OauthClientScope> scopes, Set<OauthRedirectUri> redirectUris) {
         this.id = id;
         this.clientSecret = clientSecret;
         this.domain = domain;
         this.serviceName = serviceName;
-        this.userCode = userCode;
         this.user = user;
         this.access = access;
         this.scopes = scopes;

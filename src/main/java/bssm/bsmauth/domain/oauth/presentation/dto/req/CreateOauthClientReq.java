@@ -65,7 +65,7 @@ public class CreateOauthClientReq {
                 .clientSecret(SecurityUtil.getRandomString(32))
                 .domain(domain)
                 .serviceName(serviceName)
-                .userCode(user.getCode())
+                .user(user)
                 .access(access)
                 .build();
     }

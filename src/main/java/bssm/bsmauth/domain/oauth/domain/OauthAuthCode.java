@@ -27,20 +27,16 @@ public class OauthAuthCode extends BaseTimeEntity {
     @ColumnDefault("0")
     private boolean expire;
 
-    @Column(columnDefinition = "INT UNSIGNED")
-    private Long userCode;
-
     @ManyToOne
-    @JoinColumn(name = "userCode", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
     @Builder
-    public OauthAuthCode(String code, String clientId, OauthClient oauthClient, boolean expire, Long userCode, User user) {
+    public OauthAuthCode(String code, String clientId, OauthClient oauthClient, boolean expire, User user) {
         this.code = code;
         this.clientId = clientId;
         this.oauthClient = oauthClient;
         this.expire = expire;
-        this.userCode = userCode;
         this.user = user;
     }
 

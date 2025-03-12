@@ -8,12 +8,6 @@ group = 'bssm'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '21'
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
 repositories {
 	mavenCentral()
 }
@@ -61,7 +55,7 @@ bootJar {
 	archiveFileName = "app.jar"
 }
 
-def querydslDir = "$buildDir/generated/querydsl"
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
 sourceSets {
 	main.java.srcDirs += [ querydslDir ]

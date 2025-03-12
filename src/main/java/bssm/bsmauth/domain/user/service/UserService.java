@@ -48,8 +48,8 @@ public class UserService {
         return UserRes.create(user);
     }
 
-    public OtherUserRes getOtherUserInfo(long userCode) {
-        User user = userFacade.findByCode(userCode);
+    public OtherUserRes getOtherUserInfo(long userId) {
+        User user = userFacade.findById(userId);
         return OtherUserRes.create(user);
     }
 
@@ -77,7 +77,7 @@ public class UserService {
         User user = currentUser.findUser();
         String originalFileName = Objects.requireNonNull(file.getOriginalFilename());
         String fileExt = originalFileName.substring(originalFileName.lastIndexOf(".") + 1);
-        String fileId = String.valueOf(user.getCode());
+        String fileId = String.valueOf(user.getId());
 
         File dir = new File(REAL_RESOURCE_PATH + PROFILE_UPLOAD_RESOURCE_PATH);
         File newFile = new File(dir.getPath() + "/" + fileId + "." + fileExt);

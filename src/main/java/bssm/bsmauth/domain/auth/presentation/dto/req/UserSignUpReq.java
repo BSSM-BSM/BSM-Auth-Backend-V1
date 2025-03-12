@@ -15,7 +15,7 @@ public class UserSignUpReq {
             max = 20,
             message = "id는 2 ~ 20글자여야 합니다"
     )
-    private String id;
+    private String authId;
 
     @NotBlank
     @Size(

@@ -1,20 +1,15 @@
 package bssm.bsmauth.domain.user.domain;
 
-import bssm.bsmauth.domain.oauth.domain.OauthAuthCode;
 import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.exception.NoSuchUserEmailException;
 import bssm.bsmauth.domain.user.exception.NoSuchUserNameException;
-import bssm.bsmauth.domain.user.presentation.dto.res.OtherUserRes;
-import bssm.bsmauth.domain.user.presentation.dto.res.UserRes;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.*;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Entity
@@ -23,11 +18,10 @@ public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(columnDefinition = "INT UNSIGNED")
-    private Long code;
+    private Long id;
 
-    @Column(nullable = false, length = 20, unique = true)
-    private String id;
+    @Column(name = "auth_id", nullable = false, length = 20, unique = true)
+    private String authId;
 
     @Column(nullable = false, length = 20, unique = true)
     private String nickname;
@@ -129,8 +123,8 @@ public class User extends BaseTimeEntity {
 
     public static User create(UserCache userCache) {
         User user = new User();
-        user.code = userCache.getCode();
         user.id = userCache.getId();
+        user.authId = userCache.getAuthId();
         user.nickname = userCache.getNickname();
         user.role = userCache.getRole();
         user.studentId = userCache.getStudentId();
@@ -140,9 +134,9 @@ public class User extends BaseTimeEntity {
         return user;
     }
 
-    private static User createUser(String id, String pw, String nickname) {
+    private static User createUser(String authId, String pw, String nickname) {
         User user = new User();
-        user.id = id;
+        user.authId = authId;
         user.updatePw(pw);
         user.updateNickname(nickname);
         user.failedLoginAttempts = 0;

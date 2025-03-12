@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserRes {
 
-    private Long code;
+    private Long id;
     private String nickname;
     private String email;
     private LocalDateTime createdAt;
@@ -27,7 +27,7 @@ public class UserRes {
 
     public static UserRes create(User user) {
         UserRes res = new UserRes();
-        res.code = user.getCode();
+        res.id = user.getId();
         res.nickname = user.getNickname();
         res.email = user.findEmailOrNull();
         res.createdAt = user.getCreatedAt();

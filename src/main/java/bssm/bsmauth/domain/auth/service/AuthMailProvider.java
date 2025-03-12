@@ -48,7 +48,7 @@ public class AuthMailProvider {
         mailService.sendMail(mailDto);
     }
 
-    public void sendFindIdMail(String email, String id) {
+    public void sendFindAuthIdMail(String email, String id) {
         String escapedId = StringEscapeUtils.escapeHtml4(id);
         String content = "<!DOCTYPE HTML>\n" +
                 "    <html lang=\"kr\">\n" +

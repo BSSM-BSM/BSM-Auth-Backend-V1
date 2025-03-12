@@ -22,9 +22,9 @@ public class UserController {
         return userService.findMyInfo();
     }
 
-    @GetMapping("{userCode}")
-    public OtherUserRes getOtherUserInfo(@PathVariable long userCode) {
-        return userService.getOtherUserInfo(userCode);
+    @GetMapping("{userId}")
+    public OtherUserRes getOtherUserInfo(@PathVariable long userId) {
+        return userService.getOtherUserInfo(userId);
     }
 
     @GetMapping("nickname")

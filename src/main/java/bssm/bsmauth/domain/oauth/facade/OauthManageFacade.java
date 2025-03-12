@@ -25,7 +25,7 @@ public class OauthManageFacade {
     }
 
     public List<OauthClient> findAllByUser(User user) {
-        return oauthClientRepository.findAllByUserCode(user.getCode());
+        return oauthClientRepository.findAllByUserId(user.getId());
     }
 
     public OauthClient save(OauthClient client) {
@@ -37,7 +37,7 @@ public class OauthManageFacade {
     }
 
     public void permissionCheck(OauthClient client, User user) {
-        if (!client.getUserCode().equals(user.getCode())) {
+        if (!client.getUser().getId().equals(user.getId())) {
             throw new ForbiddenException("권한이 없습니다");
         }
     }

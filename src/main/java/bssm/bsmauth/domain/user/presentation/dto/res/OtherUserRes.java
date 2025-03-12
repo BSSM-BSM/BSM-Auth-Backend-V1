@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class OtherUserRes {
 
-    private Long code;
+    private Long id;
     private String nickname;
     private LocalDateTime createdAt;
     private String profileUrl;
@@ -25,7 +25,7 @@ public class OtherUserRes {
 
     public static OtherUserRes create(User user) {
         OtherUserRes res = new OtherUserRes();
-        res.code = user.getCode();
+        res.id = user.getId();
         res.nickname = user.getNickname();
         res.createdAt = user.getCreatedAt();
         res.profileUrl = user.getProfileUrl();

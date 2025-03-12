@@ -1,6 +1,6 @@
 package bssm.bsmauth.domain.user.domain.repository;
 
 import bssm.bsmauth.domain.user.domain.UserCache;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.keyvalue.repository.KeyValueRepository;
 
-public interface RedisUserRepository extends CrudRepository<UserCache, Long> {}
+public interface RedisUserRepository extends KeyValueRepository<UserCache, Long> {}

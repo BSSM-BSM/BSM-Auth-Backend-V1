@@ -4,10 +4,13 @@ import bssm.bsmauth.domain.user.domain.User;
 import lombok.*;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
+
 import java.util.Date;
 
 @Getter
 @Entity
+@SQLRestriction("is_available = true")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshToken {
 
@@ -15,24 +18,20 @@ public class RefreshToken {
     @Column(length = 64)
     private String token;
 
-    @Column(nullable = false)
+    @Column(name = "is_available", nullable = false)
     private boolean isAvailable;
 
-    @Column(columnDefinition = "INT UNSIGNED")
-    private Long userCode;
-
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "userCode", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
     @Column(nullable = false)
     private Date createdAt;
 
     @Builder
-    public RefreshToken(String token, boolean isAvailable, Long userCode, User user, Date createdAt) {
+    public RefreshToken(String token, boolean isAvailable, User user, Date createdAt) {
         this.token = token;
         this.isAvailable = isAvailable;
-        this.userCode = userCode;
         this.user = user;
         this.createdAt = createdAt;
     }

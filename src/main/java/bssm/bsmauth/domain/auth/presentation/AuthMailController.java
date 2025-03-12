@@ -27,12 +27,12 @@ public class AuthMailController {
         authMailService.teacherAuthCodeMail(req);
     }
 
-    @PostMapping("id/student")
+    @PostMapping("auth-id/student")
     public void studentFindIdMail(@Valid @RequestBody FindStudentReq req) {
         authMailService.studentFindIdMail(req);
     }
 
-    @PostMapping("id/teacher")
+    @PostMapping("auth-id/teacher")
     public void teacherFindIdMail(@Valid @RequestBody TeacherFindIdMailReq req) {
         authMailService.teacherFindIdMail(req);
     }

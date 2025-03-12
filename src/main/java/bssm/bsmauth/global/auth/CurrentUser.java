@@ -15,30 +15,30 @@ public class CurrentUser {
 
     public User findUser() {
         String authenticationName = SecurityContextHolder.getContext().getAuthentication().getName();
-        long userCode = Long.parseLong(authenticationName);
-        return userFacade.findByCode(userCode);
+        long userId = Long.parseLong(authenticationName);
+        return userFacade.findById(userId);
     }
 
     public User findUserOrNull() {
         String authenticationName = SecurityContextHolder.getContext().getAuthentication().getName();
         if (authenticationName.equals("anonymousUser")) return null;
-        long userCode = Long.parseLong(authenticationName);
-        return userFacade.findByCode(userCode);
+        long userId = Long.parseLong(authenticationName);
+        return userFacade.findById(userId);
     }
 
     @Transactional(readOnly = true)
     public User findCachedUser() {
         String authenticationName = SecurityContextHolder.getContext().getAuthentication().getName();
-        long userCode = Long.parseLong(authenticationName);
-        return userFacade.findCachedUserByCode(userCode);
+        long userId = Long.parseLong(authenticationName);
+        return userFacade.findCachedUserById(userId);
     }
 
     @Transactional(readOnly = true)
     public User findCachedUserOrNull() {
         String authenticationName = SecurityContextHolder.getContext().getAuthentication().getName();
         if (authenticationName.equals("anonymousUser")) return null;
-        long userCode = Long.parseLong(authenticationName);
-        return userFacade.findCachedUserByCode(userCode);
+        long userId = Long.parseLong(authenticationName);
+        return userFacade.findCachedUserById(userId);
     }
 
 }

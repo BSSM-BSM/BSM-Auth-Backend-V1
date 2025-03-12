@@ -90,18 +90,18 @@ public class AuthMailService {
 
         User user = userRepository.findByStudent(student)
                 .orElseThrow(NoSuchUserException::new);
-        userMailService.sendFindIdMail(student.getEmail(), user.getId());
+        userMailService.sendFindAuthIdMail(student.getEmail(), user.getAuthId());
     }
 
     public void teacherFindIdMail(TeacherFindIdMailReq req) {
         User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, req.getEmail())
                 .orElseThrow(NoSuchUserException::new);
-        userMailService.sendFindIdMail(user.findEmailOrNull(), user.getId());
+        userMailService.sendFindAuthIdMail(user.findEmailOrNull(), user.getAuthId());
     }
 
     @Transactional
     public void resetPwMail(ResetPwMailReq req) {
-        User user = userRepository.findById(req.getId())
+        User user = userRepository.findByAuthId(req.getAuthId())
                 .orElseThrow(NoSuchUserException::new);
         String email = user.findEmailOrNull();
 
