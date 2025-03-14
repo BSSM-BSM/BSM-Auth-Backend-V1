@@ -41,7 +41,7 @@ public class OauthUserDto {
 
     public void setData(OauthScope scope, User user) {
         switch (scope.getId()) {
-            case "code" -> {
+            case "id" -> {
                 this.code = user.getId();
                 this.id = user.getId();
             }

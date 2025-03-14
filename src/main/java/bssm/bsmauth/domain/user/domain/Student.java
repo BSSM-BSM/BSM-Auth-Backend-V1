@@ -13,15 +13,15 @@ public class Student {
 
     @Id
     @Column(length = 10)
-    private String studentId;
+    private String id;
 
-    @Column(nullable = false)
+    @Column(name = "code_available", nullable = false)
     private boolean codeAvailable;
 
     @Column(length = 8, nullable = false)
     private String authCode;
 
-    @Column(columnDefinition = "year", nullable = false)
+    @Column(name = "enrolled_at", columnDefinition = "year", nullable = false)
     private int enrolledAt;
 
     @Column(columnDefinition = "INT(1) UNSIGNED", nullable = false)
@@ -52,8 +52,8 @@ public class Student {
     }
 
     @Builder
-    public Student(String studentId, boolean codeAvailable, String authCode, int enrolledAt, int grade, int classNo, int studentNo, String name, String email) {
-        this.studentId = studentId;
+    public Student(String id, boolean codeAvailable, String authCode, int enrolledAt, int grade, int classNo, int studentNo, String name, String email) {
+        this.id = id;
         this.codeAvailable = codeAvailable;
         this.authCode = authCode;
         this.enrolledAt = enrolledAt;
