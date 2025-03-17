@@ -27,7 +27,7 @@ public class OauthToken extends BaseTimeEntity {
     @JoinColumn(name = "client_id", nullable = false)
     private OauthClient oauthClient;
 
-    @Column(name = "is_expire", nullable = false)
+    @Column(name = "is_expired", nullable = false)
     @ColumnDefault("0")
     private boolean isExpired;
 

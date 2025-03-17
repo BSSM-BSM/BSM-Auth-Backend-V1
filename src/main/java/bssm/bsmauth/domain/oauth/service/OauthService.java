@@ -78,7 +78,7 @@ public class OauthService {
     }
 
     public OauthTokenRes getToken(OauthGetTokenReq req) {
-        OauthAuthCode authCode = oauthAuthCodeRepository.findByCodeAndExpire(req.getAuthCode(), false)
+        OauthAuthCode authCode = oauthAuthCodeRepository.findByCode(req.getAuthCode())
                 .orElseThrow(() -> new NotFoundException("인증 코드를 찾을 수 없습니다"));
         OauthClient client = authCode.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {

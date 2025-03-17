@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
+@SQLRestriction("is_expired != true")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OauthAuthCode extends BaseTimeEntity {
 
@@ -25,21 +27,21 @@ public class OauthAuthCode extends BaseTimeEntity {
 
     @Column(name = "is_expired", nullable = false)
     @ColumnDefault("0")
-    private boolean expire;
+    private boolean isExpired;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Builder
-    public OauthAuthCode(String code, OauthClient oauthClient, boolean expire, User user) {
+    public OauthAuthCode(String code, OauthClient oauthClient, boolean isExpired, User user) {
         this.code = code;
         this.oauthClient = oauthClient;
-        this.expire = expire;
+        this.isExpired = isExpired;
         this.user = user;
     }
 
     public void expire() {
-        this.expire = true;
+        this.isExpired = true;
     }
 }
