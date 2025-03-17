@@ -49,7 +49,6 @@ public class JwtProvider {
                 .token(newRandomToken)
                 .user(user)
                 .isAvailable(true)
-                .createdAt(new Date())
                 .build();
         refreshTokenRepository.save(newRefreshToken);
 
