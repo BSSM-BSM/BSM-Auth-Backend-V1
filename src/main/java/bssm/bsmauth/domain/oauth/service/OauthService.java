@@ -15,14 +15,13 @@ import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetResourceReq;
 import bssm.bsmauth.domain.oauth.presentation.dto.req.OauthGetTokenReq;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
-import bssm.bsmauth.global.utils.SecurityUtil;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -65,11 +64,7 @@ public class OauthService {
         User user = currentUser.findUser();
         OauthClient client = oauthFacade.checkClient(user, req.getClientId(), req.getRedirectURI());
 
-        OauthAuthCode authCode = OauthAuthCode.builder()
-                .code(SecurityUtil.getRandomString(32))
-                .user(user)
-                .oauthClient(client)
-                .build();
+        OauthAuthCode authCode = OauthAuthCode.create(client, user);
         oauthAuthCodeRepository.save(authCode);
 
         return OauthAuthorizationRes.builder()
@@ -80,6 +75,12 @@ public class OauthService {
     public OauthTokenRes getToken(OauthGetTokenReq req) {
         OauthAuthCode authCode = oauthAuthCodeRepository.findByCode(req.getAuthCode())
                 .orElseThrow(() -> new NotFoundException("인증 코드를 찾을 수 없습니다"));
+        LocalDateTime expireIn = authCode.getCreatedAt().plusMinutes(5);
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isAfter(expireIn)) {
+            throw new NotFoundException("인증 코드를 찾을 수 없습니다");
+        }
+
         OauthClient client = authCode.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {
             throw new BadRequestException(ImmutableMap.<String, String>builder().
@@ -88,30 +89,22 @@ public class OauthService {
             );
         }
 
-        authCode.expire();
+        authCode.use();
         oauthAuthCodeRepository.save(authCode);
 
-        Optional<OauthToken> token = oauthTokenRepository.findByUserAndOauthClient(authCode.getUser(), client);
-        if (token.isPresent()) {
-            return OauthTokenRes.builder()
-                    .token(token.get().getToken())
-                    .build();
-        }
-
-        OauthToken newToken = OauthToken.builder()
-                .token(SecurityUtil.getRandomString(32))
-                .user(authCode.getUser())
-                .oauthClient(client)
-                .build();
-        oauthTokenRepository.save(newToken);
+        OauthToken token = oauthTokenRepository.findByUserAndOauthClient(authCode.getUser(), client)
+                .orElseGet(() -> {
+                    OauthToken newToken = OauthToken.create(client, authCode.getUser());
+                    return oauthTokenRepository.save(newToken);
+                });
 
         return OauthTokenRes.builder()
-                .token(newToken.getToken())
+                .token(token.getToken())
                 .build();
     }
 
     public OauthResourceRes getResource(OauthGetResourceReq req) {
-        OauthToken token = oauthTokenRepository.findByTokenAndIsExpired(req.getToken(), false)
+        OauthToken token = oauthTokenRepository.findByTokenAndIsActive(req.getToken(), false)
                 .orElseThrow(NoSuchTokenException::new);
         OauthClient client = token.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {

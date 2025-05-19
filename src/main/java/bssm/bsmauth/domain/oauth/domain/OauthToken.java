@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.oauth.domain;
 
 import bssm.bsmauth.global.entity.BaseTimeEntity;
 import bssm.bsmauth.domain.user.domain.User;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -27,19 +28,20 @@ public class OauthToken extends BaseTimeEntity {
     @JoinColumn(name = "client_id", nullable = false)
     private OauthClient oauthClient;
 
-    @Column(name = "is_expired", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @ColumnDefault("0")
-    private boolean isExpired;
+    private boolean isActive;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Builder
-    public OauthToken(String token, OauthClient oauthClient, boolean isExpired, User user) {
-        this.token = token;
-        this.oauthClient = oauthClient;
-        this.isExpired = isExpired;
-        this.user = user;
+    public static OauthToken create(OauthClient oauthClient, User user) {
+        OauthToken oauthToken = new OauthToken();
+        oauthToken.token = SecurityUtil.getRandomString(32);
+        oauthToken.oauthClient = oauthClient;
+        oauthToken.isActive = true;
+        oauthToken.user = user;
+        return oauthToken;
     }
 }

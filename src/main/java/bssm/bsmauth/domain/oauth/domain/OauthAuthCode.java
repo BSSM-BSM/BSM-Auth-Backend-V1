@@ -2,6 +2,7 @@ package bssm.bsmauth.domain.oauth.domain;
 
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.global.entity.BaseTimeEntity;
+import bssm.bsmauth.global.utils.SecurityUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
-@SQLRestriction("is_expired != true")
+@SQLRestriction("is_used != true")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OauthAuthCode extends BaseTimeEntity {
 
@@ -25,23 +26,25 @@ public class OauthAuthCode extends BaseTimeEntity {
     @JoinColumn(name = "client_id", nullable = false)
     private OauthClient oauthClient;
 
-    @Column(name = "is_expired", nullable = false)
+    @Column(name = "is_used", nullable = false)
     @ColumnDefault("0")
-    private boolean isExpired;
+    private boolean isUsed;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Builder
-    public OauthAuthCode(String code, OauthClient oauthClient, boolean isExpired, User user) {
-        this.code = code;
-        this.oauthClient = oauthClient;
-        this.isExpired = isExpired;
-        this.user = user;
+    public static OauthAuthCode create(OauthClient oauthClient, User user) {
+        OauthAuthCode authCode = new OauthAuthCode();
+        authCode.code = SecurityUtil.getRandomString(32);
+        authCode.oauthClient = oauthClient;
+        authCode.isUsed = false;
+        authCode.user = user;
+        return authCode;
     }
 
-    public void expire() {
-        this.isExpired = true;
+    public void use() {
+        this.isUsed = true;
     }
 }

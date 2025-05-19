@@ -13,5 +13,5 @@ public interface OauthTokenRepository extends JpaRepository<OauthToken, String> 
 
     Optional<OauthToken> findByUserAndOauthClient(User user, OauthClient oauthClient);
 
-    Optional<OauthToken> findByTokenAndIsExpired(String token, boolean isExpired);
+    Optional<OauthToken> findByTokenAndIsActive(String token, boolean isActive);
 }
