@@ -104,7 +104,7 @@ public class OauthService {
     }
 
     public OauthResourceRes getResource(OauthGetResourceReq req) {
-        OauthToken token = oauthTokenRepository.findByTokenAndIsActive(req.getToken(), false)
+        OauthToken token = oauthTokenRepository.findByTokenAndIsActive(req.getToken(), true)
                 .orElseThrow(NoSuchTokenException::new);
         OauthClient client = token.getOauthClient();
         if ( !(client.getId().equals(req.getClientId()) && client.getClientSecret().equals(req.getClientSecret())) ) {
