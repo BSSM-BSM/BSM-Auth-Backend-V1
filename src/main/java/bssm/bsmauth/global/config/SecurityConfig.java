@@ -5,7 +5,6 @@ import bssm.bsmauth.global.auth.constant.RequestPath;
 import bssm.bsmauth.global.error.HttpErrorResponse;
 import bssm.bsmauth.global.error.exceptions.UnAuthorizedException;
 import bssm.bsmauth.global.auth.AuthFilter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import jakarta.servlet.http.HttpServletResponse;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity

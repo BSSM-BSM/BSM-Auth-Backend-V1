@@ -28,6 +28,7 @@ public class NicknameHistory {
     @Column(nullable = false, length = 20)
     private String nickname;
 
+    @Column(nullable = false)
     private LocalDateTime modifiedAt;
 
     public static NicknameHistory create(User user, String nickname) {

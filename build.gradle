@@ -1,12 +1,24 @@
 plugins {
-	id 'org.springframework.boot' version '3.3.3'
-	id 'io.spring.dependency-management' version '1.1.6'
+	id 'org.springframework.boot' version '4.0.2'
+	id 'io.spring.dependency-management' version '1.1.7'
 	id 'java'
 }
 
 group = 'bssm'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '21'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(25)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+	querydsl.extendsFrom compileClasspath
+}
 
 repositories {
 	mavenCentral()
@@ -23,28 +35,23 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 
-	//hibernate type
-	implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.8.2'
-
 	// querydsl
-	implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
-	annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
-	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
-	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+	implementation("io.github.openfeign.querydsl:querydsl-core:7.1")
+	implementation("io.github.openfeign.querydsl:querydsl-jpa:7.1")
+	annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:7.1:jpa")
 
 	// jwt
-	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 	// mariadb
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	implementation 'com.google.guava:guava:33.3.0-jre'
-	implementation 'org.apache.commons:commons-text:1.12.0'
-	implementation 'com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations'
+	implementation 'com.google.guava:guava:33.5.0-jre'
+	implementation 'org.apache.commons:commons-text:1.15.0'
 }
 
 tasks.named('test') {
@@ -58,7 +65,7 @@ bootJar {
 def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
 
 sourceSets {
-	main.java.srcDirs += [ querydslDir ]
+	main.java.srcDirs += querydslDir
 }
 
 tasks.withType(JavaCompile).configureEach {

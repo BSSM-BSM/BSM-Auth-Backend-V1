@@ -4,9 +4,9 @@ import bssm.bsmauth.domain.auth.domain.RefreshToken;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.auth.domain.repository.RefreshTokenRepository;
 import bssm.bsmauth.domain.user.facade.UserFacade;
+import com.google.common.collect.ImmutableMap;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Date;
 import java.util.HexFormat;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -34,9 +35,10 @@ public class JwtProvider {
     public String createAccessToken(User user) {
         userFacade.saveUserCache(user);
 
-        Claims claims = Jwts.claims();
-        claims.put("id", user.getId());
-        return createToken(claims, JWT_TOKEN_MAX_TIME);
+        Map<String, ?> payload = ImmutableMap.<String, Object>builder()
+                .put("id", user.getId())
+                .build();
+        return createToken(payload, JWT_TOKEN_MAX_TIME);
     }
 
     public String createRefreshToken(User user) {
@@ -52,18 +54,19 @@ public class JwtProvider {
                 .build();
         refreshTokenRepository.save(newRefreshToken);
 
-        Claims claims = Jwts.claims();
-        claims.put("token", newRandomToken);
-        return createToken(claims, JWT_REFRESH_TOKEN_MAX_TIME);
+        Map<String, ?> payload = ImmutableMap.<String, Object>builder()
+                .put("token", newRandomToken)
+                .build();
+        return createToken(payload, JWT_REFRESH_TOKEN_MAX_TIME);
     }
 
-    private String createToken(Claims claims, long time) {
+    private String createToken(Map<String, ?> payload, long time) {
         Date date = new Date();
         return Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(date)
-                .setExpiration(new Date(date.getTime() + (time * 1000)))
-                .signWith(Keys.hmacShaKeyFor(JWT_AUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
+                .claims(payload)
+                .issuedAt(date)
+                .expiration(new Date(date.getTime() + (time * 1000)))
+                .signWith(Keys.hmacShaKeyFor(JWT_AUTH_SECRET_KEY.getBytes(StandardCharsets.UTF_8)), Jwts.SIG.HS256)
                 .compact();
     }
 }
