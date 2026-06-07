@@ -5,7 +5,6 @@ import bssm.bsmauth.domain.user.domain.type.UserRole;
 import bssm.bsmauth.domain.user.presentation.dto.res.student.StudentRes;
 import bssm.bsmauth.domain.user.presentation.dto.res.teacher.TeacherRes;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,6 +18,7 @@ public class UserRes {
     private Long id;
     private String nickname;
     private String email;
+    private String recoveryEmail;
     private LocalDateTime createdAt;
     private String profileUrl;
     private UserRole role;
@@ -29,7 +29,8 @@ public class UserRes {
         UserRes res = new UserRes();
         res.id = user.getId();
         res.nickname = user.getNickname();
-        res.email = user.findEmailOrNull();
+        res.email = user.findEmailOrThrow();
+        res.recoveryEmail = user.getRecoveryEmail();
         res.createdAt = user.getCreatedAt();
         res.profileUrl = user.getProfileUrl();
         res.role = user.getRole();

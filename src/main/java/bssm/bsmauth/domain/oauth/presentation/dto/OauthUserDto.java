@@ -46,8 +46,8 @@ public class OauthUserDto {
                 this.id = user.getId();
             }
             case "nickname" -> this.nickname = user.getNickname();
-            case "name" -> this.name = user.findNameOrNull();
-            case "email" -> this.email = user.findEmailOrNull();
+            case "name" -> this.name = user.findNameOrThrow();
+            case "email" -> this.email = user.findEmailOrThrow();
             default -> {
                 if (this.role == UserRole.STUDENT) setStudent(scope, user.getStudent());
                 else if (this.role == UserRole.TEACHER) setTeacher(scope, user.getTeacher());

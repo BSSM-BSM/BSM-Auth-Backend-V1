@@ -7,7 +7,7 @@ import bssm.bsmauth.domain.auth.domain.repository.TeacherAuthCodeRepository;
 import bssm.bsmauth.domain.auth.domain.repository.TokenRepository;
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherAuthCodeMailReq;
-import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherFindIdMailReq;
+import bssm.bsmauth.domain.auth.presentation.dto.req.FindIdMailReq;
 import bssm.bsmauth.domain.user.domain.Student;
 import bssm.bsmauth.domain.user.domain.User;
 import bssm.bsmauth.domain.user.domain.type.UserRole;
@@ -15,6 +15,7 @@ import bssm.bsmauth.domain.user.domain.repository.StudentRepository;
 import bssm.bsmauth.domain.user.domain.repository.TeacherRepository;
 import bssm.bsmauth.domain.user.domain.repository.UserRepository;
 import bssm.bsmauth.domain.user.exception.NoSuchStudentException;
+import bssm.bsmauth.domain.user.exception.NoSuchUserEmailException;
 import bssm.bsmauth.domain.user.exception.NoSuchUserException;
 import bssm.bsmauth.domain.user.presentation.dto.req.student.FindStudentReq;
 import bssm.bsmauth.global.error.exceptions.BadRequestException;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -61,7 +63,7 @@ public class AuthMailService {
             );
         }
         if (teacherRepository.findByEmail(req.getEmail()).isPresent()) {
-            throw new ConflictException("해당하는 이메일의 계정이 이미 존재합니다");
+            throw new ConflictException("동일한 이메일의 계정이 이미 존재합니다");
         }
         teacherAuthCodeRepository.deleteByEmail(req.getEmail());
 
@@ -80,33 +82,44 @@ public class AuthMailService {
         userMailService.sendAuthCodeMail(req.getEmail(), authCode.getToken());
     }
 
-    public void studentFindIdMail(FindStudentReq req) {
-        Student student = studentRepository.findByGradeAndClassNoAndStudentNoAndName(
-                req.getGrade(),
-                req.getClassNo(),
-                req.getStudentNo(),
-                req.getName()
-        ).orElseThrow(NoSuchStudentException::new);
+    public void studentFindIdMail(FindIdMailReq req) {
+        Optional<Student> optionalStudent = studentRepository.findByEmail(req.getEmail());
+        Optional<User> optionalUser = userRepository.findByRoleAndRecoveryEmail(UserRole.STUDENT, req.getEmail());
 
-        User user = userRepository.findByStudent(student)
-                .orElseThrow(NoSuchUserException::new);
-        userMailService.sendFindAuthIdMail(student.getEmail(), user.getAuthId());
+        if (optionalStudent.isPresent() && optionalUser.isEmpty()) {
+            try {
+                userRepository.findByStudent(optionalStudent.get())
+                        .ifPresent((User::findRecoveryEmailOrThrow));
+            } catch (NoSuchUserEmailException e) {
+                throw new ConflictException("학교 이메일계정이 삭제되어 복구 메일을 전송할 수 없습니다.");
+            }
+        }
+
+        User user = optionalUser.orElseThrow(NoSuchUserException::new);
+        userMailService.sendFindAuthIdMail(user.findRecoveryEmailOrThrow(), user.getAuthId());
     }
 
-    public void teacherFindIdMail(TeacherFindIdMailReq req) {
-        User user = userRepository.findByRoleAndTeacherEmail(UserRole.TEACHER, req.getEmail())
+    public void teacherFindIdMail(FindIdMailReq req) {
+        User user = userRepository.findByRoleAndRecoveryEmail(UserRole.TEACHER, req.getEmail())
                 .orElseThrow(NoSuchUserException::new);
-        userMailService.sendFindAuthIdMail(user.findEmailOrNull(), user.getAuthId());
+        userMailService.sendFindAuthIdMail(user.findRecoveryEmailOrThrow(), user.getAuthId());
     }
 
     @Transactional
     public void resetPwMail(ResetPwMailReq req) {
         User user = userRepository.findByAuthId(req.getAuthId())
                 .orElseThrow(NoSuchUserException::new);
-        String email = user.findEmailOrNull();
+        try {
+            user.findRecoveryEmailOrThrow();
+        } catch (NoSuchUserEmailException e) {
+            if (user.getRole().equals(UserRole.STUDENT)) {
+                throw new ConflictException("학교 이메일계정이 삭제되어 복구 메일을 전송할 수 없습니다.");
+            }
+            throw e;
+        }
 
         UserToken token = UserToken.ofResetPw(user);
-        userMailService.sendResetPwMail(email, token.getToken());
+        userMailService.sendResetPwMail(user.findRecoveryEmailOrThrow(), token.getToken());
         tokenRepository.save(token);
     }
 }

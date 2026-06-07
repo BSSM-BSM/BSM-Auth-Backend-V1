@@ -50,11 +50,21 @@ public class User extends BaseTimeEntity {
     @Column(name = "failed_login_attempts", nullable = false)
     private Short failedLoginAttempts;
 
+    @Column(length = 320)
+    private String recoveryEmail;
+
     @OrderBy("modifiedAt DESC")
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private final List<NicknameHistory> nicknameHistories = new ArrayList<>();
 
-    public String findEmailOrNull() {
+    public String findRecoveryEmailOrThrow() throws NoSuchUserEmailException {
+         if (this.recoveryEmail != null && !this.recoveryEmail.isEmpty()) {
+             return this.recoveryEmail;
+         }
+         throw new NoSuchUserEmailException();
+    }
+
+    public String findEmailOrThrow() {
         if (this.role == UserRole.STUDENT) {
             return this.student.getEmail();
         }
@@ -64,7 +74,7 @@ public class User extends BaseTimeEntity {
         throw new NoSuchUserEmailException();
     }
 
-    public String findNameOrNull() {
+    public String findNameOrThrow() {
         if (this.role == UserRole.STUDENT) {
             return this.student.getName();
         }
@@ -139,6 +149,7 @@ public class User extends BaseTimeEntity {
         User user = createUser(id, pw, nickname);
         user.student = student;
         user.role = UserRole.STUDENT;
+        user.recoveryEmail = student.getEmail();
         return user;
     }
 
@@ -146,6 +157,7 @@ public class User extends BaseTimeEntity {
         User user = createUser(id, pw, nickname);
         user.teacher = teacher;
         user.role = UserRole.TEACHER;
+        user.recoveryEmail = teacher.getEmail();
         return user;
     }
 

@@ -2,7 +2,7 @@ package bssm.bsmauth.domain.auth.presentation;
 
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherAuthCodeMailReq;
-import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherFindIdMailReq;
+import bssm.bsmauth.domain.auth.presentation.dto.req.FindIdMailReq;
 import bssm.bsmauth.domain.auth.service.AuthMailService;
 import bssm.bsmauth.domain.user.presentation.dto.req.student.FindStudentReq;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +28,12 @@ public class AuthMailController {
     }
 
     @PostMapping("auth-id/student")
-    public void studentFindIdMail(@Valid @RequestBody FindStudentReq req) {
+    public void studentFindIdMail(@Valid @RequestBody FindIdMailReq req) {
         authMailService.studentFindIdMail(req);
     }
 
     @PostMapping("auth-id/teacher")
-    public void teacherFindIdMail(@Valid @RequestBody TeacherFindIdMailReq req) {
+    public void teacherFindIdMail(@Valid @RequestBody FindIdMailReq req) {
         authMailService.teacherFindIdMail(req);
     }
 
