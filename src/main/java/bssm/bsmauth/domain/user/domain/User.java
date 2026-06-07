@@ -113,6 +113,10 @@ public class User extends BaseTimeEntity {
         this.pwSalt = pwSalt;
     }
 
+    public void updateRecoveryEmail(String email) {
+        this.recoveryEmail = email;
+    }
+
     public void updateNickname(String nickname) {
         this.nickname = nickname;
     }

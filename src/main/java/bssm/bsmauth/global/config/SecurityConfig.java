@@ -55,6 +55,7 @@ public class SecurityConfig {
                 })
                 .authorizeHttpRequests(configure -> {
                     configure.requestMatchers(RequestPath.excludedAuthTokenPaths.toArray(RequestMatcher[]::new)).permitAll();
+                    configure.requestMatchers(RequestPath.studentOnlyPaths.toArray(RequestMatcher[]::new)).hasAuthority("STUDENT");
                     configure.anyRequest().authenticated();
                 });
 

@@ -25,4 +25,8 @@ public class RequestPath {
             PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/oauth/token"),
             PathPatternRequestMatcher.pathPattern(HttpMethod.POST, "/oauth/resource")
     );
+
+    public static final List<RequestMatcher> studentOnlyPaths = Arrays.asList(
+            PathPatternRequestMatcher.pathPattern("/auth/student/recovery-email")
+    );
 }

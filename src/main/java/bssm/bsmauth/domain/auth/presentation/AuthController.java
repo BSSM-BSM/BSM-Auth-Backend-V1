@@ -1,6 +1,7 @@
 package bssm.bsmauth.domain.auth.presentation;
 
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
+import bssm.bsmauth.domain.auth.presentation.dto.req.student.UpdateStudentRecoveryEmailReq;
 import bssm.bsmauth.domain.auth.service.AuthService;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherSignUpReq;
 import bssm.bsmauth.domain.auth.presentation.dto.res.ResetPwTokenRes;
@@ -38,6 +39,11 @@ public class AuthController {
     @PostMapping("teacher")
     public void teacherSignUp(@Valid @RequestBody TeacherSignUpReq req) {
         authService.teacherSignUp(req);
+    }
+
+    @PutMapping("student/recovery-email")
+    public void updateStudentRecoveryEmail(@Valid @RequestBody UpdateStudentRecoveryEmailReq req) {
+        authService.updateStudentRecoveryEmail(req);
     }
 
     @PutMapping("pw")

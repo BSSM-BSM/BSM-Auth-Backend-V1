@@ -12,6 +12,7 @@ import bssm.bsmauth.domain.auth.exception.InvalidCredentialsException;
 import bssm.bsmauth.domain.auth.exception.NoSuchAuthCodeException;
 import bssm.bsmauth.domain.auth.exception.NoSuchTokenException;
 import bssm.bsmauth.domain.auth.presentation.dto.req.*;
+import bssm.bsmauth.domain.auth.presentation.dto.req.student.UpdateStudentRecoveryEmailReq;
 import bssm.bsmauth.domain.user.domain.*;
 import bssm.bsmauth.domain.user.domain.repository.*;
 import bssm.bsmauth.domain.auth.presentation.dto.req.teacher.TeacherSignUpReq;
@@ -169,6 +170,11 @@ public class AuthService {
         } catch (Exception ignored) {}
     }
 
+    @Transactional
+    public void updateStudentRecoveryEmail(UpdateStudentRecoveryEmailReq req) {
+        User user = currentUser.findUser();
+        user.updateRecoveryEmail(req.getNewRecoveryEmail());
+    }
 
     @Transactional
     public void updatePw(UpdatePwReq req) {
