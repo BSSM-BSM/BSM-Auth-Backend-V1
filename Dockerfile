@@ -1,4 +1,4 @@
-FROM gradle:9.3-jdk25-alpine AS builder
+FROM gradle:9.8-jdk25-alpine AS builder
 WORKDIR /gradle
 
 COPY gradlew .
